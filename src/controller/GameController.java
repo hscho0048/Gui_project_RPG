@@ -10,12 +10,14 @@ public class GameController {
     private Opponent opponent;
     private GameView view;
     private Random random;
+    private boolean isPlayerDefending; // 방어 상태를 나타내는 필드
 
     public GameController(Player player, Opponent opponent, GameView view) {
         this.player = player;
         this.opponent = opponent;
         this.view = view;
         this.random = new Random();
+        this.isPlayerDefending = false; // 초기 상태는 방어 아님
     }
 
     public void playerAttack() {
@@ -31,20 +33,18 @@ public class GameController {
     }
 
     public void playerHeal() {
-        if (player.getHealCount() < player.getMaxHealCount()) {
-            int healAmount = (int) (player.getHealth() * 0.2); // 현재 체력의 20% 회복
-            int actualHeal = Math.min(healAmount, 100 - player.getHealth()); // 실제 회복량 계산
-            player.heal(actualHeal);
-            view.updateStatus("플레이어가 " + actualHeal + " 만큼 체력을 회복했습니다!");
-            view.updatePlayerInfo();
+        int healAmount = (int) (player.getHealth() * 0.2); // 현재 체력의 20% 회복
+        int actualHeal = Math.min(healAmount, 100 - player.getHealth()); // 실제 회복량 계산
+        player.heal(actualHeal);
+        view.updateStatus("플레이어가 " + actualHeal + " 만큼 체력을 회복했습니다!");
+        view.updatePlayerInfo();
+        view.updateHealButtonText(); // 회복 버튼 텍스트 업데이트
+    }
 
-            if (player.getHealCount() >= player.getMaxHealCount()) {
-                view.updateStatus("최대 회복 횟수에 도달했습니다. 더 이상 회복할 수 없습니다.");
-                view.disableHealButton(); // 회복 버튼 비활성화
-            }
-        } else {
-            view.updateStatus("회복 횟수를 초과하여 더 이상 회복할 수 없습니다.");
-        }
+    public void playerDefend() {
+        isPlayerDefending = true; // 방어 상태 활성화
+        player.increaseDefensePower(10); // 방어력 증가
+        view.updateStatus("플레이어가 방어 자세를 취했습니다! 다음 공격이 방어됩니다.");
     }
 
     public void useItem(String selectedItem) {
@@ -74,6 +74,13 @@ public class GameController {
         boolean isAttacking = random.nextBoolean(); // true면 공격, false면 회복
 
         if (isAttacking) {
+            if (isPlayerDefending) {
+                view.updateStatus("플레이어가 방어에 성공했습니다! 데미지를 받지 않았습니다.");
+                isPlayerDefending = false; // 방어 상태 해제
+                player.resetDefensePower(); // 방어력 초기화
+                return true;
+            }
+
             int damage = random.nextInt(10) + 5;
             player.takeDamage(damage);
             view.updateStatus("상대가 " + damage + " 데미지를 입혔습니다!");

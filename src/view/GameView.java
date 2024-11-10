@@ -9,10 +9,12 @@ import model.Player;
 import model.Opponent;
 
 public class GameView extends JFrame {
+	private static final long serialVersionUID = 1L;
+
     private JLabel playerImageLabel, opponentImageLabel;
     private JLabel playerInfoLabel, opponentInfoLabel;
     private JProgressBar playerHealthBar, opponentHealthBar;
-    private JButton attackButton, nextButton, healButton, itemButton;
+    private JButton attackButton, healButton, itemButton, defendButton, nextButton;
     private JPanel logPanel;
     private Player player;
     private Opponent opponent;
@@ -74,15 +76,20 @@ public class GameView extends JFrame {
         itemButton.addActionListener(e -> showItemSelection());
         itemButton.setEnabled(true);
 
+        defendButton = new JButton("방어");
+        defendButton.addActionListener(e -> handleDefendButton());
+        defendButton.setEnabled(true);
+
         nextButton = new JButton("다음");
         nextButton.setEnabled(false);
 
         // 버튼 패널
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridLayout(1, 4)); // 4개 버튼이므로 GridLayout(1, 4)
+        buttonPanel.setLayout(new GridLayout(1, 5)); // 5개 버튼이므로 GridLayout(1, 5)
         buttonPanel.add(attackButton);
         buttonPanel.add(healButton);
         buttonPanel.add(itemButton);
+        buttonPanel.add(defendButton);
         buttonPanel.add(nextButton);
 
         // 메인 패널
@@ -100,9 +107,11 @@ public class GameView extends JFrame {
     private void handleAttackButton() {
         if (playerTurn) {
             controller.playerAttack();
+            flashImage(opponentImageLabel); // 상대 이미지 깜빡임
             attackButton.setEnabled(false);
             healButton.setEnabled(false);
             itemButton.setEnabled(false);
+            defendButton.setEnabled(false);
             nextButton.setEnabled(false);
             playerTurn = false; // 턴을 상대에게 넘김
             scheduleOpponentTurn(); // 상대의 턴 자동 실행
@@ -116,16 +125,24 @@ public class GameView extends JFrame {
             attackButton.setEnabled(false);
             healButton.setEnabled(false);
             itemButton.setEnabled(false);
+            defendButton.setEnabled(false);
             nextButton.setEnabled(false);
             playerTurn = false; // 턴을 상대에게 넘김
             scheduleOpponentTurn(); // 상대의 턴 자동 실행
         }
     }
 
-    public void updateHealButtonText() {
-        healButton.setText("회복 (남은 횟수: " + (player.getMaxHealCount() - player.getHealCount()) + ")");
-        if (player.getHealCount() >= player.getMaxHealCount()) {
-            healButton.setEnabled(false); // 남은 횟수가 0일 경우 버튼 비활성화
+    private void handleDefendButton() {
+        if (playerTurn) {
+            controller.playerDefend(); // 플레이어 방어
+            showDefenseShield(playerImageLabel); // 방어막 표시
+            attackButton.setEnabled(false);
+            healButton.setEnabled(false);
+            itemButton.setEnabled(false);
+            defendButton.setEnabled(false);
+            nextButton.setEnabled(false);
+            playerTurn = false; // 턴을 상대에게 넘김
+            scheduleOpponentTurn(); // 상대의 턴 자동 실행
         }
     }
 
@@ -147,9 +164,13 @@ public class GameView extends JFrame {
         // 선택된 아이템에 따라 로직 처리
         if (selectedItem != null) {
             controller.useItem(selectedItem); // 선택된 아이템 사용
+            if ("방어력 강화 물약".equals(selectedItem)) {
+                showDefenseShield(playerImageLabel); // 방어막 표시
+            }
             attackButton.setEnabled(false);
             healButton.setEnabled(false);
             itemButton.setEnabled(false);
+            defendButton.setEnabled(false);
             nextButton.setEnabled(false);
             playerTurn = false; // 턴을 상대에게 넘김
             scheduleOpponentTurn(); // 상대의 턴 자동 실행
@@ -163,25 +184,85 @@ public class GameView extends JFrame {
             public void run() {
                 SwingUtilities.invokeLater(() -> {
                     boolean opponentAction = controller.opponentTurn(); // 상대의 행동
+                    if (opponentAction) {
+                        flashImage(playerImageLabel); // 플레이어 이미지 깜빡임
+                    }
                     playerTurn = true; // 플레이어 턴으로 변경
                     attackButton.setEnabled(true);
                     healButton.setEnabled(player.getHealCount() < player.getMaxHealCount()); // 회복 버튼 활성화 여부 설정
                     itemButton.setEnabled(true);
+                    defendButton.setEnabled(true);
                 });
             }
         }, 2000); // 2초 후 상대의 턴 실행
     }
 
+    private void flashImage(JLabel imageLabel) {
+        Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            int count = 0;
+            @Override
+            public void run() {
+                if (count >= 6) {
+                    timer.cancel();
+                    return;
+                }
+                imageLabel.setVisible(!imageLabel.isVisible());
+                count++;
+            }
+        }, 0, 100); // 100ms 간격으로 깜빡임
+    }
+
+    private void showDefenseShield(JLabel imageLabel) {
+        // 방어막 이미지를 로드하여 JLabel로 생성
+        JLabel shieldLabel = new JLabel(new ImageIcon("resources/shield.png"));
+        shieldLabel.setBounds(0, 0, imageLabel.getWidth(), imageLabel.getHeight());
+        
+        // 이미지 레이블의 부모 패널에 방어막 레이블 추가
+        imageLabel.getParent().add(shieldLabel);
+        imageLabel.getParent().setComponentZOrder(shieldLabel, 0); // 방어막 이미지를 맨 위에 표시
+        imageLabel.getParent().repaint();
+
+        // 2초 후 방어막 이미지를 제거
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                SwingUtilities.invokeLater(() -> {
+                    shieldLabel.setVisible(false);
+                    imageLabel.getParent().remove(shieldLabel);
+                    imageLabel.getParent().revalidate();
+                    imageLabel.getParent().repaint();
+                });
+            }
+        }, 2000); // 방어막이 2초 동안 표시됨
+    }
+
     public void updateStatus(String status) {
         addLogMessage(status, true); // 로그 패널에 메시지 추가
-    }
-    
-    public void disableHealButton() {
-        healButton.setEnabled(false); // 회복 버튼 비활성화
     }
 
     public void disableAttackButton() {
         attackButton.setEnabled(false); // 공격 버튼 비활성화
+    }
+
+    public void disableHealButton() {
+        healButton.setEnabled(false); // 회복 버튼 비활성화
+    }
+
+    public void disableDefendButton() {
+        defendButton.setEnabled(false); // 방어 버튼 비활성화
+    }
+
+    public void enableDefendButton() {
+        defendButton.setEnabled(true); // 방어 버튼 활성화
+    }
+
+    public void updateHealButtonText() {
+        healButton.setText("회복 (남은 횟수: " + (player.getMaxHealCount() - player.getHealCount()) + ")");
+        if (player.getHealCount() >= player.getMaxHealCount()) {
+            disableHealButton(); // 남은 횟수가 0일 경우 버튼 비활성화
+        }
     }
 
     public void updatePlayerInfo() {
