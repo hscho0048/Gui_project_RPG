@@ -32,8 +32,9 @@ public class GameController {
 
     public void playerHeal() {
         int healAmount = (int) (player.getHealth() * 0.2); // 현재 체력의 20% 회복
-        player.heal(healAmount);
-        view.updateStatus("플레이어가 " + healAmount + " 만큼 체력을 회복했습니다!");
+        int actualHeal = Math.min(healAmount, 100 - player.getHealth()); // 실제 회복량 계산
+        player.heal(actualHeal);
+        view.updateStatus("플레이어가 " + actualHeal + " 만큼 체력을 회복했습니다!");
         view.updatePlayerInfo();
     }
 
@@ -52,8 +53,9 @@ public class GameController {
             return true;
         } else {
             int healAmount = (int) (opponent.getHealth() * 0.2); // 현재 체력의 20% 회복
-            opponent.heal(healAmount);
-            view.updateStatus("상대가 " + healAmount + " 만큼 체력을 회복했습니다!");
+            int actualHeal = Math.min(healAmount, 100 - opponent.getHealth()); // 실제 회복량 계산
+            opponent.heal(actualHeal);
+            view.updateStatus("상대가 " + actualHeal + " 만큼 체력을 회복했습니다!");
             view.updateOpponentInfo();
             return false;
         }
