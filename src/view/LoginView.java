@@ -51,7 +51,7 @@ public class LoginView extends JFrame {
         if (userController.authenticate(username, password)) {
             JOptionPane.showMessageDialog(this, "로그인 성공!", "알림", JOptionPane.INFORMATION_MESSAGE);
             dispose(); // 로그인 창 닫기
-            new GameView(username); // 게임 창 열기
+            new HomeView(username, userController); // 홈 화면 열기
         } else {
             JOptionPane.showMessageDialog(this, "아이디 또는 비밀번호가 올바르지 않습니다.", "오류", JOptionPane.ERROR_MESSAGE);
         }
