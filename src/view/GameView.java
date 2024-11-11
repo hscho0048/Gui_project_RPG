@@ -6,6 +6,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import controller.GameController;
 import model.Player;
+import model.Store;
 import model.Opponent;
 
 public class GameView extends JFrame {
@@ -17,7 +18,8 @@ public class GameView extends JFrame {
     private Player player;
     private Opponent opponent;
     private GameController controller;
-    private boolean playerTurn;
+    private boolean playerTurn;    
+    private JButton storeButton; 
 
     public GameView(String playerName) {
         // 초기화
@@ -70,16 +72,26 @@ public class GameView extends JFrame {
         healButton.addActionListener(e -> handleHealButton());
         healButton.setEnabled(true);
 
+        // 상점
+        storeButton = new JButton("상점");
+        storeButton.addActionListener(e -> {
+            Store store = new Store();  // Store 객체 초기화
+            new StoreView(player, store, this);  // 이전 화면(MainMenu) 전달
+            this.setVisible(false);  // 현재 화면 숨기기
+        });
+        
         nextButton = new JButton("다음");
         nextButton.setEnabled(false);
+        
 
         // 버튼 패널
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridLayout(1, 3));
         buttonPanel.add(attackButton);
         buttonPanel.add(healButton);
+        buttonPanel.add(storeButton);
         buttonPanel.add(nextButton);
-
+        
         // 메인 패널
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new GridLayout(2, 1));
@@ -182,5 +194,13 @@ public class GameView extends JFrame {
         nextButton.setEnabled(false);
         addLogMessage("플레이어의 턴입니다! 공격 또는 회복 버튼을 눌러주세요.", true);
     }
+    
+    private void shop(Player player) {
+    	Store store = new Store();
+        //JOptionPane.showMessageDialog(this, "상점은 아직 구현되지 않았습니다.", "알림", JOptionPane.INFORMATION_MESSAGE);
+    	new StoreView(player, store, this);
+    	dispose();
+	}
+
 }
 
