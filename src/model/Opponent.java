@@ -22,6 +22,12 @@ public class Opponent {
     public int getHealth() {
         return health;
     }
+<<<<<<< HEAD
+=======
+    public int getMaxHealth() {
+        return maxHealth; // maxHealth 반환 메소드 추가
+    }
+>>>>>>> 0ca0e7c (commit message)
 
     public void takeDamage(int damage) {
         health -= damage;
@@ -36,4 +42,13 @@ public class Opponent {
     public boolean decideToAttack() {
         return random.nextBoolean(); // true면 공격, false면 방어 또는 회복
     }
+<<<<<<< HEAD
+=======
+    public int specialAttack() {
+        return 10; // 기본 특수 공격력
+    }
+    public void reset() {
+        this.health = maxHealth; // 최대 체력으로 회복
+    }
+>>>>>>> 0ca0e7c (commit message)
 }
