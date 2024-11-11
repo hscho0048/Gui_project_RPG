@@ -3,10 +3,14 @@ package view;
 import javax.swing.*;
 import java.awt.*;
 import controller.GameController;
+import model.Player;
+import model.Store;
 
 public class LoginView extends JFrame {
     private JTextField nameField;
-    private JButton loginButton;
+    private JButton loginButton; 
+    private Player player;
+    private Store store;
 
     public LoginView() {
         setTitle("RPG 로그인");
@@ -21,7 +25,7 @@ public class LoginView extends JFrame {
         // 로그인 버튼
         loginButton = new JButton("로그인");
         loginButton.addActionListener(e -> login());
-
+        
         // 패널에 컴포넌트 추가
         JPanel panel = new JPanel();
         panel.add(nameLabel);
@@ -32,7 +36,8 @@ public class LoginView extends JFrame {
         setVisible(true);
     }
 
-    private void login() {
+    
+	private void login() {
         String playerName = nameField.getText();
         if (!playerName.trim().isEmpty()) {
             // 플레이어 이름 입력 시 GameView로 이동
