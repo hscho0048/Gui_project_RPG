@@ -80,20 +80,16 @@ public class StoreView extends JFrame {
 		buyButton = new JButton("구매");
 		buyButton.addActionListener(e -> handleBuyItem());
 		
-		JPanel buttonPanel = new JPanel();
-		buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-		buttonPanel.add(buyButton);
-		
-		add(buttonPanel, BorderLayout.SOUTH);
-		
 		backButton = new JButton("뒤로가기");
         backButton.addActionListener(e -> handleBackButton());
         
-        JPanel backButtonPanel = new JPanel();
-        backButtonPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        backButtonPanel.add(backButton);
-		
-        add(backButtonPanel, BorderLayout.NORTH); 
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+        
+        buttonPanel.add(buyButton);
+        buttonPanel.add(backButton);
+        
+        add(buttonPanel, BorderLayout.SOUTH);
         
 		setVisible(true);
 	}
