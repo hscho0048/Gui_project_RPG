@@ -2,6 +2,7 @@ package view;
 
 import javax.swing.*;
 import java.awt.*;
+
 import controller.UserController;
 
 public class HomeView extends JFrame {
@@ -39,7 +40,7 @@ public class HomeView extends JFrame {
 
     private void startBattle() {
         // 대결 화면으로 이동 (GameView로 전환)
-        new GameView(playerName);
+        new GameView(playerName, userController); // userController 전달
         dispose(); // 홈 화면 닫기
     }
 
@@ -51,3 +52,4 @@ public class HomeView extends JFrame {
         JOptionPane.showMessageDialog(this, "캐릭터 선택은 아직 구현되지 않았습니다.", "알림", JOptionPane.INFORMATION_MESSAGE);
     }
 }
+
