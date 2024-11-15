@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
+<<<<<<< HEAD
 	<name>RPG</name>
+=======
+<<<<<<< HEAD
+	<name>rungui</name>
+=======
+	<name>RPG</name>
+>>>>>>> 0ca0e7c (commit message)
+>>>>>>> 35f4c543b586ee3eacd249c2c8f43679c629fab6
 	<comment></comment>
 	<projects>
 	</projects>
