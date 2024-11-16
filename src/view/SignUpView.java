@@ -4,18 +4,18 @@ import javax.swing.*;
 import java.awt.*;
 import controller.UserController;
 
-public class LoginView extends JFrame {
+public class SignUpView extends JFrame {
     private JTextField usernameField;
     private JPasswordField passwordField;
-    private JButton loginButton, signUpButton;
+    private JButton signUpButton;
     private UserController userController;
 
-    public LoginView(UserController userController) {
+    public SignUpView(UserController userController) {
         this.userController = userController;
 
-        setTitle("RPG 로그인");
+        setTitle("회원가입");
         setSize(300, 200);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new GridLayout(3, 2));
 
         // ID 입력 필드
@@ -26,34 +26,34 @@ public class LoginView extends JFrame {
         JLabel passwordLabel = new JLabel("비밀번호:");
         passwordField = new JPasswordField(15);
 
-        // 로그인 버튼
-        loginButton = new JButton("로그인");
-        loginButton.addActionListener(e -> login());
-
         // 회원가입 버튼
         signUpButton = new JButton("회원가입");
-        signUpButton.addActionListener(e -> new SignUpView(userController));
+        signUpButton.addActionListener(e -> signUp());
 
         add(usernameLabel);
         add(usernameField);
         add(passwordLabel);
         add(passwordField);
-        add(loginButton);
         add(signUpButton);
 
         setVisible(true);
     }
 
-    private void login() {
+    private void signUp() {
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
+        
+        if (username.isEmpty() || password.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "아이디와 비밀번호를 입력해주세요.", "오류", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
-        if (userController.authenticate(username, password)) {
-            JOptionPane.showMessageDialog(this, "로그인 성공!", "알림", JOptionPane.INFORMATION_MESSAGE);
-            dispose(); // 로그인 창 닫기
-            new HomeView(username, userController); // 홈 화면 열기
+        boolean success = userController.signUp(username, password);
+        if (success) {
+            JOptionPane.showMessageDialog(this, "회원가입 성공!", "알림", JOptionPane.INFORMATION_MESSAGE);
+            dispose(); // 회원가입 창 닫기
         } else {
-            JOptionPane.showMessageDialog(this, "아이디 또는 비밀번호가 올바르지 않습니다.", "오류", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "이미 존재하는 아이디입니다.", "오류", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
