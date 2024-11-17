@@ -60,9 +60,9 @@ public class GameView extends JFrame {
 		// 플레이어 이미지와 정보
 		playerImageLabel = new JLabel(new ImageIcon("resources/playerImage.jpg"));
 		playerInfoLabel = new JLabel("플레이어: " + player.getName());
-		playerHealthBar = new JProgressBar(0, 100);
-		playerHealthBar.setValue(player.getHealth());
-		playerHealthBar.setStringPainted(true);
+		playerHealthBar = new JProgressBar(0);
+		setupHealthBar(playerHealthBar, player.getHealth(), player.getMaxHealth());
+
 		JPanel playerPanel = new JPanel();
 		playerPanel.setLayout(new BoxLayout(playerPanel, BoxLayout.Y_AXIS));
 		playerPanel.add(playerImageLabel);
@@ -75,9 +75,8 @@ public class GameView extends JFrame {
 
 		opponentImageLabel = new JLabel(new ImageIcon("resources/opponentImage.jpg"));
 		opponentInfoLabel = new JLabel("상대: " + opponent.getName());
-		opponentHealthBar = new JProgressBar(0, opponent.getMaxHealth());
-		opponentHealthBar.setValue(opponent.getHealth());
-		opponentHealthBar.setStringPainted(true);
+		opponentHealthBar = new JProgressBar();
+		setupHealthBar(opponentHealthBar, opponent.getHealth(), opponent.getMaxHealth());
 
 		opponentPanel.add(opponentImageLabel);
 		opponentPanel.add(opponentInfoLabel);
@@ -123,6 +122,23 @@ public class GameView extends JFrame {
 		setVisible(true);
 	}
 
+	private void setupHealthBar(JProgressBar healthBar, int currentHealth, int maxHealth) {
+		healthBar.setMaximum(maxHealth);
+		healthBar.setValue(currentHealth);
+		healthBar.setString(currentHealth + " / " + maxHealth);
+		healthBar.setStringPainted(true);
+	}
+
+	public void updatePlayerInfo() {
+		playerInfoLabel.setText("플레이어: " + player.getName());
+		setupHealthBar(playerHealthBar, player.getHealth(), player.getMaxHealth());
+	}
+
+	public void updateOpponentInfo() {
+		opponentInfoLabel.setText("상대: " + opponent.getName());
+		setupHealthBar(opponentHealthBar, opponent.getHealth(), opponent.getMaxHealth());
+	}
+
 	private void handleAttackButton() {
 		if (playerTurn) {
 			boolean opponentDefeated = controller.playerAttack();
@@ -148,18 +164,14 @@ public class GameView extends JFrame {
 	public void showBossMonster(BossMonster bossMonster) {
 
 		opponentInfoLabel.setText("보스: " + bossMonster.getName());
-		opponentHealthBar.setMaximum(bossMonster.getMaxHealth());
-		opponentHealthBar.setValue(bossMonster.getHealth());
-		opponentHealthBar.setStringPainted(true);
-
+		setupHealthBar(opponentHealthBar, bossMonster.getHealth(), bossMonster.getMaxHealth());
 		opponentImageLabel.setIcon(new ImageIcon("resources/bossImage.jpg")); // 보스 이미지로 변경
 		opponentPanel.revalidate();
 		opponentPanel.repaint();
 	}
 
 	public void updateBossHealthBar(BossMonster bossMonster) {
-		opponentHealthBar.setValue(bossMonster.getHealth()); // 체력 갱신
-
+		setupHealthBar(opponentHealthBar, bossMonster.getHealth(), bossMonster.getMaxHealth());
 	}
 
 	private void showItemSelection() {
@@ -309,29 +321,6 @@ public class GameView extends JFrame {
 
 	public void enableNextButton() {
 		nextButton.setEnabled(true); // 다음 버튼 활성화
-	}
-
-	public void updatePlayerInfo() {
-		playerInfoLabel.setText("플레이어: " + player.getName());
-		playerHealthBar.setValue(player.getHealth());
-	}
-
-	public void updateOpponentInfo() {
-		opponentInfoLabel.setText("상대: " + opponent.getName());
-
-		// 상대가 보스 몬스터일 경우
-		if (opponent instanceof BossMonster) {
-			BossMonster boss = (BossMonster) opponent;
-
-			// 보스 몬스터의 체력바 갱신
-			opponentHealthBar.setMaximum(boss.getMaxHealth());
-			opponentHealthBar.setValue(boss.getHealth());
-		} else {
-			// 일반 상대의 체력바 갱신
-			opponentHealthBar.setMaximum(opponent.getMaxHealth());
-			opponentHealthBar.setValue(opponent.getHealth());
-		}
-
 	}
 
 	public void disableAllButtons() {
