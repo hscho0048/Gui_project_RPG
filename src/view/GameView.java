@@ -58,7 +58,7 @@ public class GameView extends JFrame {
 		logScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
 		// 플레이어 이미지와 정보
-		playerImageLabel = new JLabel(new ImageIcon("resources/playerImage.jpg"));
+		playerImageLabel = new JLabel(new ImageIcon(getClass().getClassLoader().getResource("playerImage.jpg")));
 		playerInfoLabel = new JLabel("플레이어: " + player.getName());
 		playerHealthBar = new JProgressBar(0);
 		setupHealthBar(playerHealthBar, player.getHealth(), player.getMaxHealth());
@@ -73,7 +73,7 @@ public class GameView extends JFrame {
 		opponentPanel = new JPanel();
 		opponentPanel.setLayout(new BoxLayout(opponentPanel, BoxLayout.Y_AXIS));
 
-		opponentImageLabel = new JLabel(new ImageIcon("resources/opponentImage.jpg"));
+		opponentImageLabel = new JLabel(new ImageIcon(getClass().getClassLoader().getResource("opponentImage.jpg")));
 		opponentInfoLabel = new JLabel("상대: " + opponent.getName());
 		opponentHealthBar = new JProgressBar();
 		setupHealthBar(opponentHealthBar, opponent.getHealth(), opponent.getMaxHealth());
@@ -165,7 +165,7 @@ public class GameView extends JFrame {
 
 		opponentInfoLabel.setText("보스: " + bossMonster.getName());
 		setupHealthBar(opponentHealthBar, bossMonster.getHealth(), bossMonster.getMaxHealth());
-		opponentImageLabel.setIcon(new ImageIcon("resources/bossImage.jpg")); // 보스 이미지로 변경
+		opponentImageLabel.setIcon(new ImageIcon(getClass().getClassLoader().getResource("bossImage.jpg"))); // 보스 이미지로 변경
 		opponentPanel.revalidate();
 		opponentPanel.repaint();
 	}
@@ -276,7 +276,7 @@ public class GameView extends JFrame {
 
 	private void showDefenseShield(JLabel imageLabel) {
 		// 방어막 이미지를 로드하여 JLabel로 생성
-		JLabel shieldLabel = new JLabel(new ImageIcon("resources/shield.png"));
+		JLabel shieldLabel = new JLabel(new ImageIcon(getClass().getClassLoader().getResource("shield.png")));
 		shieldLabel.setBounds(0, 0, imageLabel.getWidth(), imageLabel.getHeight());
 
 		// 이미지 레이블의 부모 패널에 방어막 레이블 추가

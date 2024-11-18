@@ -12,8 +12,8 @@ public class Shop {
 		items = new ArrayList<>();
 		
 		// 이미지 경로
-		ImageIcon hpImage = new ImageIcon("resources/hpPotion.jpg");
-        ImageIcon attackImage = new ImageIcon("resources/attackPotion.jpg");
+		ImageIcon hpImage = new ImageIcon(getClass().getClassLoader().getResource("hpPotion.jpg"));
+        ImageIcon attackImage = new ImageIcon(getClass().getClassLoader().getResource("attackPotion.jpg"));
 		
 		// 임의의 아이템 설정
 		items.add(new Item("체력 회복 물약", 50, hpImage));
