@@ -50,6 +50,16 @@ public class HomeView extends JPanel {
     }
 
     private void showGameView() {
+        Component[] components = mainFrame.getContentPane().getComponents();
+        for (Component component : components) {
+            if (component instanceof GameView) {
+                GameView gameView = (GameView) component;
+                gameView.restartGame(); // 게임 재시작 로직 호출
+                break;
+            }
+        }
+
+        // GameView 화면으로 전환
         CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
         cardLayout.show(mainFrame.getContentPane(), "GameView");
     }

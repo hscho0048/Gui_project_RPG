@@ -332,32 +332,60 @@ public class GameView extends JPanel {
         // 플레이어 상태 초기화
         player.reset();
         userController.updateScore(player.getName(), totalTurns); // 최종 턴 수를 업데이트
-
+        updateHomeRanking();
         returnToHome();
     }
 
     private void endGame() {
         updateStatus("게임이 종료되었습니다!");
-        userController.updateScore(player.getName(), totalOpponentTurnCount);
+        userController.updateScore(player.getName(), totalTurns);
+        updateHomeRanking();
         returnToHome();
     }
     public void restartGame() {
-        gameController.resetGame(); // 게임 상태 초기화
-        opponent = gameController.getOpponent(); // 초기화된 상대 가져오기
+        totalTurns = 0; // 턴 수 초기화
+        player.reset(); // 플레이어 상태 초기화
+        opponent = new Opponent("상대", 100); // 상대 초기화
+
+        // 스테이지 초기화
+        currentStage = 1;
         updatePlayerInfo(); // 플레이어 정보 갱신
         updateOpponentInfo(); // 상대 정보 갱신
-        updateStage(gameController.getCurrentStage()); // 스테이지 정보 갱신
-        nextButton.setEnabled(false); // "다음" 버튼 비활성화
-        clearLog(); // 로그 초기화
-        totalOpponentTurnCount = 0; // 턴 수 초기화
+        updateStage(currentStage); // 스테이지 정보 갱신
+        
+        opponentImageLabel.setIcon(new ImageIcon("resources/opponentImage.jpg")); // 초기 이미지 설정
+
+        // 버튼 상태 초기화
+        attackButton.setEnabled(true);
+        defendButton.setEnabled(true);
+        nextButton.setEnabled(false);
+
+        // 로그 초기화
+        logPanel.removeAll();
+        logPanel.revalidate();
+        logPanel.repaint();
+
+        // 게임 시작
+        isPlayerTurn = true;
+        isPlayerDefending = false;
     }
+
     private void clearLog() {
         logPanel.removeAll(); // 로그 패널의 모든 컴포넌트 제거
         logPanel.revalidate(); // 레이아웃 갱신
         logPanel.repaint(); // 화면 갱신
     }
+    private void updateHomeRanking() {
+        Component[] components = mainFrame.getContentPane().getComponents();
+        for (Component component : components) {
+            if (component instanceof HomeView) {
+                HomeView homeView = (HomeView) component;
+                homeView.updateRanking(); // 랭킹 갱신 호출
+                break;
+            }
+        }
+    }
     
-
 
     private void returnToHome() {
         CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
