@@ -57,8 +57,14 @@ public class GameView extends JFrame {
 		logScrollPane = new JScrollPane(logPanel); // JScrollPane에 logPanel 추가
 		logScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
+		// 사진 축소
+		ImageIcon originalIcon = player.getImage();
+		Image originalImage = originalIcon.getImage();
+		Image scaledImage = originalImage.getScaledInstance(150, 150, Image.SCALE_SMOOTH);
+		ImageIcon scaledIcon = new ImageIcon(scaledImage);
+		
 		// 플레이어 이미지와 정보
-		playerImageLabel = new JLabel(new ImageIcon(getClass().getClassLoader().getResource("playerImage.jpg")));
+		playerImageLabel = new JLabel(scaledIcon);
 		playerInfoLabel = new JLabel("플레이어: " + player.getName());
 		playerHealthBar = new JProgressBar(0);
 		setupHealthBar(playerHealthBar, player.getHealth(), player.getMaxHealth());
