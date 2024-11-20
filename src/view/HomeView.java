@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import controller.UserController;
+import model.MyCharacter;
 import model.Player;
 import model.Shop;
 
@@ -15,9 +16,10 @@ public class HomeView extends JFrame {
 	private UserController userController;
 	private Player player;
 	private Shop shop;
+	private MyCharacter character;
 
 	public HomeView(String playerName, UserController userController) {
-		player = new Player(playerName, 100, 10);
+		player = new Player(playerName, 100);
 		this.playerName = playerName;
 		this.userController = userController;
 
@@ -51,6 +53,12 @@ public class HomeView extends JFrame {
 	}
 
 	private void startBattle() {
+		// 캐릭터가 선택되지 않은 경우, 대결 시작 불가
+		if (!isCharacterSelected()) {
+			JOptionPane.showMessageDialog(this, "캐릭터를 선택해야 대결을 시작할 수 있습니다.", "알림", JOptionPane.WARNING_MESSAGE);
+			return;
+		}
+
 		// 대결 화면으로 이동 (GameView로 전환)
 		new GameView(playerName, userController, player);
 		dispose(); // 홈 화면 닫기
@@ -64,7 +72,9 @@ public class HomeView extends JFrame {
 	}
 
 	private void selectCharacter() {
-		JOptionPane.showMessageDialog(this, "캐릭터 선택은 아직 구현되지 않았습니다.", "알림", JOptionPane.INFORMATION_MESSAGE);
+		character = new MyCharacter();
+		// 캐릭터 선택 화면으로 이동
+		new CharacterView(player, character, this);
 	}
 
 	// 랭킹을 가져와 표시하는 메서드
@@ -90,6 +100,17 @@ public class HomeView extends JFrame {
 		scrollPane.setPreferredSize(new Dimension(300, 200));
 
 		JOptionPane.showMessageDialog(this, scrollPane, "랭킹 보기", JOptionPane.INFORMATION_MESSAGE);
+	}
+	
+	// 캐릭터 선택 여부 확인
+	private boolean isCharacterSelected() {
+		// 공격력과 특수공격력이 설정되었는지 체크
+		return player.getAttackPower() > 0 && player.getSpecialPower() > 0;
+	}
+
+	// 플레이어 정보 업데이트 (캐릭터 선택 후)
+	public void setPlayer(Player player) {
+		this.player = player;
 	}
 
 }
