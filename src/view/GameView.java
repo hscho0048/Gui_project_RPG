@@ -34,6 +34,7 @@ public class GameView extends JPanel {
     private JPanel inventoryPanel; // 아이템 인벤토리 패널
     private JLabel turnCountLabel; // 턴 수를 표시할 레이블
     private int turnCount = 1; // 초기 턴 수
+    private int totalTurns; // 총 턴 수를 추적하는 변수
 
 
 
@@ -223,6 +224,7 @@ public class GameView extends JPanel {
         isPlayerTurn = false;
         attackButton.setEnabled(false);
         defendButton.setEnabled(false);
+        totalTurns++; // 턴 수 증가
 
         scheduleOpponentTurn();
     }
@@ -327,10 +329,9 @@ public class GameView extends JPanel {
 
         JOptionPane.showMessageDialog(this, "플레이어가 패배했습니다. 홈으로 돌아갑니다.");
 
-        userController.updateScore(player.getName(), totalOpponentTurnCount);
-
         // 플레이어 상태 초기화
         player.reset();
+        userController.updateScore(player.getName(), totalTurns); // 최종 턴 수를 업데이트
 
         returnToHome();
     }

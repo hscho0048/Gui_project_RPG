@@ -91,17 +91,17 @@ public class UserController {
 
 	// 점수 업데이트 메서드: 게임이 끝날 때 턴 수로 점수를 업데이트
 	public boolean updateScore(String username, int turnCount) {
-		String query = "UPDATE users SET score = ? WHERE username = ?";
-		try (PreparedStatement stmt = connection.prepareStatement(query)) {
-			stmt.setInt(1, turnCount);
-			stmt.setString(2, username);
-			int rowsAffected = stmt.executeUpdate();
-			System.out.println(username + "의 점수가 " + turnCount + "으로 업데이트되었습니다.");
-			return rowsAffected > 0;
-		} catch (SQLException e) {
-			System.out.println("점수 업데이트 실패: " + e.getMessage());
-			return false;
-		}
+	    String query = "UPDATE users SET score = ? WHERE username = ?";
+	    try (PreparedStatement stmt = connection.prepareStatement(query)) {
+	        stmt.setInt(1, turnCount); // 턴 수를 설정
+	        stmt.setString(2, username); // 사용자 이름 설정
+	        int rowsAffected = stmt.executeUpdate();
+	        System.out.println(username + "의 점수가 " + turnCount + "으로 업데이트되었습니다.");
+	        return rowsAffected > 0;
+	    } catch (SQLException e) {
+	        System.out.println("점수 업데이트 실패: " + e.getMessage());
+	        return false;
+	    }
 	}
 
 	// 특정 사용자의 점수 조회 메서드
