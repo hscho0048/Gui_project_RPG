@@ -15,9 +15,9 @@ public class ShopView extends JFrame {
 	private JButton buyButton;
 	private JButton backButton;
 	private JLabel playerInfoLabel;
-	private JList<Item> itemList;  // 아이템 목록
 	private DefaultListModel<Item> itemModel;  // 아이템 목록을 위한 모델  
 	private JPanel itemPanel;
+	private JPanel inventoryPanel;  // 인벤토리 패널
 	private Shop shop; 
 	
 	private HomeView homeView;  // homeView 객체 추가
@@ -39,7 +39,15 @@ public class ShopView extends JFrame {
 		playerInfoLabel.setFont(font);
 	    add(playerInfoLabel, BorderLayout.NORTH);
 	   	    
-	    itemPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+	    // 인벤토리
+	    inventoryPanel = new JPanel();
+	    inventoryPanel.setLayout(new BoxLayout(inventoryPanel, BoxLayout.Y_AXIS)); // 개별적으로 BoxLayout 설정
+	    inventoryPanel.setBorder(BorderFactory.createTitledBorder("인벤토리"));
+	    updateInventoryPanel();
+	    add(new JScrollPane(inventoryPanel), BorderLayout.WEST); // 스크롤 추가
+
+	    
+	    itemPanel = new JPanel(new GridLayout(0, 3, 10, 10));
 	    itemPanel.setOpaque(false);
 	    List<Item> items = shop.getItem();
 	    if(items != null && !items.isEmpty()) {
@@ -70,6 +78,26 @@ public class ShopView extends JFrame {
 		
 		setVisible(true);
 	}
+	
+	private void updateInventoryPanel() {
+	    inventoryPanel.removeAll(); // 기존 내용 제거
+
+	    List<Item> inventory = player.getInventory(); // 플레이어 인벤토리 가져오기
+	    if (inventory == null || inventory.isEmpty()) {
+	        JLabel emptyLabel = new JLabel("인벤토리가 비었습니다.");
+	        emptyLabel.setHorizontalAlignment(SwingConstants.CENTER);
+	        inventoryPanel.add(emptyLabel);
+	    } else {
+	        for (Item item : inventory) {
+	            JLabel itemLabel = new JLabel(item.getName() + " x " + item.getQuantity());
+	            itemLabel.setFont(new Font("Default", Font.PLAIN, 14));
+	            inventoryPanel.add(itemLabel);
+	        }
+	    }
+
+	    inventoryPanel.revalidate();
+	    inventoryPanel.repaint();
+	}
 
 	public void updateItemList(List<Item> items) {
 		itemModel.clear();
@@ -81,15 +109,14 @@ public class ShopView extends JFrame {
 	}
 	
 	private void handleBuyItem() {
-		//Item selectedItem = itemList.getSelectedValue();
 		Item selectedItem = (Item) itemPanel.getClientProperty("selectedItem");
 		if(selectedItem != null) {			
 			if(player.getMoney() >= selectedItem.getPrice()) {
 				player.buyItem(selectedItem);
 				player.setMoney(player.getMoney() - selectedItem.getPrice());
 				selectedItem.increaseQuantity(1);
-				//updateItemList(shop.getItem());  // 아이템 목록 갱신
 				updatePlayerInfo();
+				updateInventoryPanel();
 				JOptionPane.showMessageDialog(this, selectedItem.getName()+"을(를) 구매하였습니다.");
 			}
 			else {
