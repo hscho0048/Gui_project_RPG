@@ -32,6 +32,9 @@ public class GameView extends JPanel {
     private JFrame mainFrame;
     private GameController gameController;
     private JPanel inventoryPanel; // 아이템 인벤토리 패널
+    private JLabel turnCountLabel; // 턴 수를 표시할 레이블
+    private int turnCount = 1; // 초기 턴 수
+
 
 
     public GameView(String playerName, UserController userController, Player player, JFrame mainFrame) {
@@ -64,17 +67,27 @@ public class GameView extends JPanel {
         stageLabel.setFont(new Font("Serif", Font.BOLD, 24));
         stageLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
+        // 턴 수 레이블
+        turnCountLabel = new JLabel("턴 수: " + turnCount);
+        turnCountLabel.setFont(new Font("Serif", Font.PLAIN, 16));
+        turnCountLabel.setHorizontalAlignment(SwingConstants.LEFT);
+
+        // 상단 패널 (스테이지와 턴 수를 포함)
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(stageLabel, BorderLayout.CENTER);
+        topPanel.add(turnCountLabel, BorderLayout.WEST);
+
+        add(topPanel, BorderLayout.NORTH);
+
         // 로그 패널
         logPanel = new JPanel();
         logPanel.setLayout(new BoxLayout(logPanel, BoxLayout.Y_AXIS));
         logScrollPane = new JScrollPane(logPanel);
         logScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
-        // 플레이어와 상대 패널
         initializePlayerPanel();
         initializeOpponentPanel();
 
-        // 버튼 패널
         attackButton = new JButton("공격");
         attackButton.addActionListener(e -> handleAttackButton());
 
@@ -88,18 +101,16 @@ public class GameView extends JPanel {
         homeButton = new JButton("홈으로");
         homeButton.addActionListener(e -> returnToHome());
 
-        // 4개의 버튼만 추가하도록 GridLayout 수정
         JPanel buttonPanel = new JPanel(new GridLayout(1, 4));
         buttonPanel.add(attackButton);
         buttonPanel.add(defendButton);
         buttonPanel.add(nextButton);
         buttonPanel.add(homeButton);
 
-        // 컴포넌트 추가
-        add(stageLabel, BorderLayout.NORTH);
         add(logScrollPane, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
     }
+
 
 
     private void initializePlayerPanel() {
@@ -246,10 +257,18 @@ public class GameView extends JPanel {
 
     private void startPlayerTurn() {
         isPlayerTurn = true;
+        turnCount++; // 턴 수 증가
+        updateTurnCountLabel(); // 턴 수 레이블 업데이트
         attackButton.setEnabled(true);
         defendButton.setEnabled(true);
+        nextButton.setEnabled(false);
         updateStatus("플레이어의 턴입니다!");
     }
+    private void updateTurnCountLabel() {
+        turnCountLabel.setText("턴 수: " + turnCount);
+    }
+
+
 
     private void nextStage() {
         if (!gameController.isLastStage()) {
