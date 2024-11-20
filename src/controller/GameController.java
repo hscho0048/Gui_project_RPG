@@ -67,6 +67,10 @@ public class GameController {
 			player.increaseAttackPower(10); // 공격력 10 증가
 			view.updateStatus("플레이어가 '" + selectedItem + "'을(를) 사용하여 공격력이 증가했습니다!");
 			break;
+		case "방어력 증가 물약":
+			player.increaseDefencePower(10);  // 방어력 10 증가 (임의)
+			view.updateStatus("플레이어가 '" + selectedItem + "'을(를) 사용하여 방어력이 증가했습니다!");
+			break;
 		default:
 			view.updateStatus("알 수 없는 아이템입니다.");
 			break;
