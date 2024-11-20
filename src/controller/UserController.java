@@ -154,13 +154,25 @@ public class UserController {
 			return false;
 		}
 	}
+	public void addPurchase(String username, String itemName) {
+	    String query = "INSERT INTO purchases (user_id, item_name) VALUES ((SELECT id FROM users WHERE username = ?), ?)";
+	    try (PreparedStatement stmt = connection.prepareStatement(query)) {
+	        stmt.setString(1, username); // 사용자 이름
+	        stmt.setString(2, itemName); // 아이템 이름
+	        stmt.executeUpdate();
+	        System.out.println(username + "이(가) " + itemName + "을(를) 구매했습니다.");
+	    } catch (SQLException e) {
+	        System.out.println("구매 내역 추가 실패: " + e.getMessage());
+	    }
+	}
+
 
 	public ResultSet getRanking() {
 	    String query = """
 	        SELECT 
 	            ROW_NUMBER() OVER (ORDER BY score ASC) AS `rank`, -- 순위
 	            username AS player,                              -- 사용자 이름
-	            'UNKNOWN' AS 'character',                         -- 캐릭터 필드: UNKNOWN 값
+	            'UNKNOWN' AS `character`,                       -- 캐릭터 필드: UNKNOWN 값
 	            GROUP_CONCAT(p.item_name SEPARATOR ', ') AS items, -- 구매 아이템
 	            score AS turns                                  -- 턴 수
 	        FROM users u
@@ -177,6 +189,7 @@ public class UserController {
 	        return null;
 	    }
 	}
+
 
 
 

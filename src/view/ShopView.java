@@ -108,8 +108,23 @@ public class ShopView extends JPanel {
                 player.buyItem(selectedItem); // 플레이어가 아이템 구매
                 player.setMoney(player.getMoney() - selectedItem.getPrice()); // 금액 차감
 
-                // GameView에 아이템 추가
-                gameView.addItemToInventory(selectedItem); // 필드 gameView를 사용
+                // GameView를 안전하게 가져오기
+                GameView gameView = null;
+                for (Component component : mainFrame.getContentPane().getComponents()) {
+                    if (component instanceof GameView) {
+                        gameView = (GameView) component;
+                        break;
+                    }
+                }
+
+                if (gameView != null) {
+                    gameView.addItemToInventory(selectedItem); // GameView에 아이템 추가
+                } else {
+                    System.out.println("GameView를 찾을 수 없습니다.");
+                }
+
+                // 구매 내역 데이터베이스 업데이트
+                userController.addPurchase(player.getName(), selectedItem.getName());
 
                 updatePlayerInfo(); // 플레이어 정보 갱신
             } else {
@@ -119,6 +134,8 @@ public class ShopView extends JPanel {
             UIUtils.indicateError(buyButton); // 아이템이 선택되지 않았을 때
         }
     }
+
+
 
 
 
