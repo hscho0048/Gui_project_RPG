@@ -1,6 +1,7 @@
 package view;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -8,7 +9,7 @@ import controller.UserController;
 
 public class HomeView extends JPanel {
     private JButton battleButton, shopButton, characterSelectButton;
-    private JTextArea rankingTextArea; // 랭킹 정보를 표시할 텍스트 영역
+    private JTable rankingTable; // JTable로 랭킹 데이터 표시
     private UserController userController;
     private JFrame mainFrame;
 
@@ -31,17 +32,16 @@ public class HomeView extends JPanel {
         buttonPanel.add(shopButton);
         buttonPanel.add(characterSelectButton);
 
-        // 랭킹 패널
-        JPanel rankingPanel = new JPanel();
-        rankingPanel.setLayout(new BorderLayout());
+        // 랭킹 테이블 패널
+        JPanel rankingPanel = new JPanel(new BorderLayout());
         rankingPanel.setBorder(BorderFactory.createTitledBorder("랭킹"));
 
-        rankingTextArea = new JTextArea();
-        rankingTextArea.setEditable(false); // 사용자 입력 비활성화
-        JScrollPane scrollPane = new JScrollPane(rankingTextArea); // 스크롤 가능하도록 설정
+        // JTable 초기화
+        rankingTable = new JTable(new DefaultTableModel(new Object[]{"순위", "플레이어", "캐릭터", "구매 아이템", "턴수"}, 0));
+        JScrollPane scrollPane = new JScrollPane(rankingTable); // 스크롤 가능하도록 설정
         rankingPanel.add(scrollPane, BorderLayout.CENTER);
 
-        // 버튼과 랭킹을 나란히 배치
+        // 버튼과 랭킹 테이블을 나란히 배치
         add(buttonPanel, BorderLayout.WEST);
         add(rankingPanel, BorderLayout.CENTER);
 
@@ -60,44 +60,28 @@ public class HomeView extends JPanel {
     }
 
     public void updateRanking() {
-        StringBuilder rankingText = new StringBuilder();
-        rankingText.append("순위\t플레이어\t캐릭터\t구매 아이템\t턴수\n");
-        rankingText.append("--------------------------------------------------\n");
+        DefaultTableModel tableModel = (DefaultTableModel) rankingTable.getModel();
+        tableModel.setRowCount(0); // 기존 데이터 제거
 
         ResultSet rs = userController.getRanking();
         if (rs == null) {
-            rankingText.append("랭킹 데이터를 불러오는 중 오류가 발생했습니다.\n");
-            rankingTextArea.setText(rankingText.toString());
+            JOptionPane.showMessageDialog(this, "랭킹 데이터를 불러오는 중 오류가 발생했습니다.", "오류", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         try {
-            boolean hasData = false;
             while (rs.next()) {
-                hasData = true;
                 int rank = rs.getInt("rank");
                 String player = rs.getString("player");
-                String character = rs.getString("character"); // 'UNKNOWN' 값 가져오기
+                String character = rs.getString("character") != null ? rs.getString("character") : "UNKNOWN";
                 String items = rs.getString("items") != null ? rs.getString("items") : "없음";
                 int turns = rs.getInt("turns");
 
-                rankingText.append(rank).append("\t")
-                           .append(player).append("\t")
-                           .append(character).append("\t")
-                           .append(items).append("\t")
-                           .append(turns).append("\n");
-            }
-
-            if (!hasData) {
-                rankingText.append("아직 플레이한 사용자가 없습니다.\n");
+                // JTable에 데이터 추가
+                tableModel.addRow(new Object[]{rank, player, character, items, turns});
             }
         } catch (SQLException e) {
-            rankingText.append("랭킹 데이터를 처리하는 중 오류 발생: ").append(e.getMessage());
+            JOptionPane.showMessageDialog(this, "랭킹 데이터를 처리하는 중 오류가 발생했습니다: " + e.getMessage(), "오류", JOptionPane.ERROR_MESSAGE);
         }
-
-        rankingTextArea.setText(rankingText.toString());
     }
-
-
 }
-
