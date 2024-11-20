@@ -44,15 +44,26 @@ public class GameController {
     public void nextStage() {
         if (currentStage < MAX_STAGE) {
             currentStage++;
-            opponent.levelUp(currentStage * 10, currentStage * 5);
-
             if (currentStage == 2) {
-                opponent = new BossMonster("드래곤", 300, 10, 50);
+                // 스테이지 2에서 보스 몬스터 설정
+                opponent = new BossMonster("드래곤", 300, 20, 50);
+                System.out.println("보스 몬스터 등장: " + opponent.getName());
             } else {
-                opponent.reset();
+                // 일반 상대 레벨업
+                opponent.levelUp(currentStage * 10, currentStage * 5);
             }
         }
     }
+    public void resetGame() {
+        player.reset(); // 플레이어 상태 초기화
+        opponent.reset(); // 상대 상태 초기화
+        currentStage = 1; // 스테이지를 처음으로 초기화
+        if (opponent instanceof BossMonster) {
+            opponent = new Opponent("상대", 100); // 일반 몬스터로 교체
+        }
+    }
+
+
 
     // 현재 스테이지 반환
     public int getCurrentStage() {

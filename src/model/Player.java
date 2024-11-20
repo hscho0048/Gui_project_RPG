@@ -68,9 +68,10 @@ public class Player {
     }
 
     public void reset() {
-        health = maxHealth;
-        isDefending = false;
+        this.health = this.maxHealth; // 체력을 최대 체력으로 초기화
+        this.isDefending = false; // 방어 상태 해제
     }
+
 
     // 인벤토리 관리
     public List<Item> getInventory() {

@@ -20,11 +20,12 @@ public class HomeView extends JPanel {
         this.mainFrame = mainFrame;
 
         setLayout(new GridLayout(4, 1));
-
+        
         battleButton = new JButton("대결");
         battleButton.addActionListener(e -> {
+            ((GameView) mainFrame.getContentPane().getComponent(2)).restartGame(); // GameView 초기화
             CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
-            cardLayout.show(mainFrame.getContentPane(), "GameView");
+            cardLayout.show(mainFrame.getContentPane(), "GameView"); // 게임 화면으로 전환
         });
 
         shopButton = new JButton("상점");
