@@ -3,6 +3,10 @@ package controller;
 import model.Player;
 import model.Opponent;
 import model.BossMonster;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Random;
 
 public class GameController {
@@ -11,11 +15,56 @@ public class GameController {
     private int currentStage = 1;
     private static final int MAX_STAGE = 2;
     private Random random;
+    private Connection connection;
+
 
     public GameController(Player player, Opponent opponent) {
         this.player = player;
         this.opponent = opponent;
         this.random = new Random();
+    }
+    
+    public void startGame(String username) {
+        String query = "UPDATE users SET turn_count = turn_count + 1 WHERE username = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, username);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("게임 시작 업데이트 실패: " + e.getMessage());
+        }
+    }
+ // 턴 수 업데이트
+    public void incrementTurnCount(String username) {
+        String query = "UPDATE users SET turn_count = turn_count + 1 WHERE username = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, username);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("턴 수 업데이트 실패: " + e.getMessage());
+        }
+    }
+
+    // 점수 업데이트
+    public void updateScore(String username, int score) {
+        String query = "UPDATE users SET score = ? WHERE username = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, score);
+            stmt.setString(2, username);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("점수 업데이트 실패: " + e.getMessage());
+        }
+    }
+    public void recordPurchase(int userId, String itemName) {
+        String query = "INSERT INTO purchases (user_id, item_name) VALUES (?, ?)";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, userId);
+            stmt.setString(2, itemName);
+            stmt.executeUpdate();
+            System.out.println("아이템 구매 기록이 저장되었습니다: " + itemName);
+        } catch (SQLException e) {
+            System.out.println("아이템 구매 기록 저장 실패: " + e.getMessage());
+        }
     }
 
     // 플레이어 공격

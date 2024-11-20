@@ -5,6 +5,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import model.Player;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -152,16 +155,65 @@ public class UserController {
 		}
 	}
 
-	// UserController 클래스 내에 추가
 	public ResultSet getRanking() {
-		String query = "SELECT username, score FROM users ORDER BY score ASC";
-		try {
-			PreparedStatement stmt = connection.prepareStatement(query);
-			return stmt.executeQuery();
-		} catch (SQLException e) {
-			System.out.println("랭킹 조회 실패: " + e.getMessage());
-			return null;
-		}
+	    String query = """
+	        SELECT 
+	            ROW_NUMBER() OVER (ORDER BY score ASC) AS `rank`, -- 순위
+	            username AS player,                              -- 사용자 이름
+	            'UNKNOWN' AS 'character',                         -- 캐릭터 필드: UNKNOWN 값
+	            GROUP_CONCAT(p.item_name SEPARATOR ', ') AS items, -- 구매 아이템
+	            score AS turns                                  -- 턴 수
+	        FROM users u
+	        LEFT JOIN purchases p ON u.id = p.user_id          -- 구매 정보와 사용자 연결
+	        GROUP BY u.id
+	        ORDER BY score ASC;
+	    """;
+
+	    try {
+	        PreparedStatement stmt = connection.prepareStatement(query);
+	        return stmt.executeQuery();
+	    } catch (SQLException e) {
+	        System.out.println("랭킹 조회 실패: " + e.getMessage());
+	        return null;
+	    }
 	}
+
+
+
+	public void recordPurchase(int userId, String itemName) {
+	    String query = "INSERT INTO purchases (user_id, item_name) VALUES (?, ?)";
+	    try (PreparedStatement stmt = connection.prepareStatement(query)) {
+	        stmt.setInt(1, userId);        // 사용자 ID
+	        stmt.setString(2, itemName);  // 아이템 이름
+	        stmt.executeUpdate();
+	        System.out.println("아이템 구매 기록이 저장되었습니다: " + itemName);
+	    } catch (SQLException e) {
+	        System.out.println("아이템 구매 기록 저장 실패: " + e.getMessage());
+	    }
+	}
+	public Player getPlayerInfo(String username) {
+	    String query = "SELECT id, username, money FROM users WHERE username = ?";
+	    try (PreparedStatement stmt = connection.prepareStatement(query)) {
+	        stmt.setString(1, username);
+	        ResultSet rs = stmt.executeQuery();
+	        if (rs.next()) {
+	            int id = rs.getInt("id");
+	            String name = rs.getString("username");
+	            int money = rs.getInt("money"); // money 컬럼 읽기
+	            return new Player(id, name, money);
+	        }
+	    } catch (SQLException e) {
+	        System.out.println("플레이어 정보 조회 실패: " + e.getMessage());
+	    }
+	    return null;
+	}
+
+
+
+	public Connection getConnection() {
+        return connection;
+    }
+
+
 
 }

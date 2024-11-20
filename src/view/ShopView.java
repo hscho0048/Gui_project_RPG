@@ -1,6 +1,9 @@
 package view;
 
 import javax.swing.*;
+
+import controller.UserController;
+
 import java.awt.*;
 import java.util.List;
 import model.Item;
@@ -14,16 +17,17 @@ public class ShopView extends JPanel {
     private JPanel itemPanel;
     private JButton buyButton;
     private JButton backButton;
+    private UserController userController;
     private Shop shop;
     private JFrame mainFrame; // CardLayout 관리용 프레임
+    private GameView gameView;
 
-    public ShopView(Player player, Shop shop, JFrame mainFrame) {
+    public ShopView(Player player, UserController userController, GameView gameView, JFrame mainFrame) {
         this.player = player;
-        this.shop = shop;
+        this.userController = userController;
+        this.gameView = gameView; // GameView 초기화
         this.mainFrame = mainFrame;
-
-        setLayout(new BorderLayout());
-
+        this.shop = new Shop();
         Font font = new Font("Default", Font.BOLD, 15);
 
         // 플레이어 정보
@@ -105,8 +109,7 @@ public class ShopView extends JPanel {
                 player.setMoney(player.getMoney() - selectedItem.getPrice()); // 금액 차감
 
                 // GameView에 아이템 추가
-                GameView gameView = (GameView) mainFrame.getContentPane().getComponent(2);
-                gameView.addItemToInventory(selectedItem);
+                gameView.addItemToInventory(selectedItem); // 필드 gameView를 사용
 
                 updatePlayerInfo(); // 플레이어 정보 갱신
             } else {
