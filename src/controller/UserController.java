@@ -15,7 +15,7 @@ public class UserController {
 		try {
 			String url = "jdbc:mysql://localhost:3306/RPGGame";
 			String user = "root";
-			String password = "1111"; // 자신의 데이터베이스 비밀번호로 수정
+			String password = "lshlsh5258"; // 자신의 데이터베이스 비밀번호로 수정
 			connection = DriverManager.getConnection(url, user, password);
 			System.out.println("데이터베이스에 연결되었습니다.");
 		} catch (SQLException e) {

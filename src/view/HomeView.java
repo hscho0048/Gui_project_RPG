@@ -17,7 +17,7 @@ public class HomeView extends JFrame {
 	private Shop shop;
 
 	public HomeView(String playerName, UserController userController) {
-		player = new Player(playerName, 100, 10);
+		player = new Player(playerName, 100, 20,20, 10,10);
 		this.playerName = playerName;
 		this.userController = userController;
 

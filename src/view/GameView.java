@@ -22,7 +22,7 @@ public class GameView extends JFrame {
 	private JLabel stageLabel;
 
 	private JProgressBar playerHealthBar, opponentHealthBar;
-	private JButton attackButton, itemButton, defendButton, nextButton;
+	private JButton attackButton, skillAttackButton, itemButton, defendButton, nextButton;
 	private JPanel logPanel, stagePanel, opponentPanel;
 	private JScrollPane logScrollPane;
 	private Player player;
@@ -33,7 +33,7 @@ public class GameView extends JFrame {
 	public GameView(String playerName, UserController userController, Player player) {
 		// 초기화
 		this.player = player;
-		opponent = new Opponent("상대", 100);
+		opponent = new Opponent("상대", 100, 10, 10, 10, 10);
 		controller = new GameController(player, opponent, this, userController);
 		playerTurn = true;
 
@@ -87,6 +87,10 @@ public class GameView extends JFrame {
 		attackButton.addActionListener(e -> handleAttackButton());
 		attackButton.setEnabled(true);
 
+		skillAttackButton = new JButton("특수공격");
+		skillAttackButton.addActionListener(e -> handleSkillAttackButton()); // 특수공격 버튼 클릭 이벤트 추가
+		skillAttackButton.setEnabled(true);
+		
 		itemButton = new JButton("아이템 사용");
 		itemButton.addActionListener(e -> showItemSelection());
 		itemButton.setEnabled(true);
@@ -103,6 +107,7 @@ public class GameView extends JFrame {
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new GridLayout(1, 4)); // 4개 버튼
 		buttonPanel.add(attackButton);
+		buttonPanel.add(skillAttackButton);
 		buttonPanel.add(itemButton);
 		buttonPanel.add(defendButton);
 		buttonPanel.add(nextButton);
@@ -141,19 +146,34 @@ public class GameView extends JFrame {
 
 	private void handleAttackButton() {
 		if (playerTurn) {
-			boolean opponentDefeated = controller.playerAttack();
+			boolean opponentDefeated = controller.playerNormalAttack();
 			flashImage(opponentImageLabel); // 상대 이미지 깜빡임
-			attackButton.setEnabled(false);
-			itemButton.setEnabled(false);
-			defendButton.setEnabled(false);
-			nextButton.setEnabled(false);
+			disableAllButtons();
 			playerTurn = false; // 턴을 상대에게 넘김
 			scheduleOpponentTurn(); // 상대의 턴 자동 실행
 			if (opponentDefeated) {
 				Timer timer = new Timer();
 				timer.schedule(new TimerTask() {
 					public void run() {
-						nextButton.setEnabled(true); // 상대가 패배하면 다음 버튼 활성화
+						enableNextButton(); // 상대가 패배하면 다음 버튼 활성화
+					}
+				}, 2000);
+
+			}
+		}
+	}
+	private void handleSkillAttackButton() {
+		if (playerTurn) {
+			boolean opponentDefeated = controller.playerSkillAttack();
+			flashImage(opponentImageLabel); // 상대 이미지 깜빡임
+			disableAllButtons();
+			playerTurn = false; // 턴을 상대에게 넘김
+			scheduleOpponentTurn(); // 상대의 턴 자동 실행
+			if (opponentDefeated) {
+				Timer timer = new Timer();
+				timer.schedule(new TimerTask() {
+					public void run() {
+						enableNextButton(); // 상대가 패배하면 다음 버튼 활성화
 					}
 				}, 2000);
 
@@ -165,7 +185,8 @@ public class GameView extends JFrame {
 
 		opponentInfoLabel.setText("보스: " + bossMonster.getName());
 		setupHealthBar(opponentHealthBar, bossMonster.getHealth(), bossMonster.getMaxHealth());
-		opponentImageLabel.setIcon(new ImageIcon(getClass().getClassLoader().getResource("bossImage.jpg"))); // 보스 이미지로 변경
+		opponentImageLabel.setIcon(new ImageIcon(getClass().getClassLoader().getResource("bossImage.jpg"))); // 보스 이미지로
+																												// 변경
 		opponentPanel.revalidate();
 		opponentPanel.repaint();
 	}
@@ -216,10 +237,7 @@ public class GameView extends JFrame {
 		if (playerTurn) {
 			controller.playerDefend(); // 플레이어 방어
 			showDefenseShield(playerImageLabel); // 방어막 표시
-			attackButton.setEnabled(false);
-			itemButton.setEnabled(false);
-			defendButton.setEnabled(false);
-			nextButton.setEnabled(false);
+			disableAllButtons();
 			playerTurn = false; // 턴을 상대에게 넘김
 			scheduleOpponentTurn(); // 상대의 턴 자동 실행
 		}
@@ -238,9 +256,7 @@ public class GameView extends JFrame {
 						return;
 					}
 					playerTurn = true; // 플레이어 턴으로 변경
-					attackButton.setEnabled(true);
-					itemButton.setEnabled(true);
-					defendButton.setEnabled(true);
+					enableAllButtons();
 				});
 			}
 		}, 2000); // 2초 후 상대의 턴 실행
@@ -251,9 +267,7 @@ public class GameView extends JFrame {
 		controller.nextStage();
 		playerTurn = true; // 플레이어 턴으로 변경
 		nextButton.setEnabled(false); // 다음 버튼 비활성화
-		attackButton.setEnabled(true); // 공격 버튼 활성화
-		itemButton.setEnabled(true); // 아이템 버튼 활성화
-		defendButton.setEnabled(true); // 방어 버튼 활성화
+		enableAllButtons();
 
 	}
 
@@ -307,28 +321,24 @@ public class GameView extends JFrame {
 		stageLabel.setText("Stage " + stageNumber); // 스테이지 번호를 업데이트
 	}
 
-	public void disableAttackButton() {
-		attackButton.setEnabled(false); // 공격 버튼 비활성화
-	}
-
-	public void disableDefendButton() {
-		defendButton.setEnabled(false); // 방어 버튼 비활성화
-	}
-
-	public void enableDefendButton() {
-		defendButton.setEnabled(true); // 방어 버튼 활성화
-	}
-
 	public void enableNextButton() {
 		nextButton.setEnabled(true); // 다음 버튼 활성화
+	}
+	
+	public void enableAllButtons() {
+		attackButton.setEnabled(true);
+		skillAttackButton.setEnabled(true);
+		itemButton.setEnabled(true);
+		defendButton.setEnabled(true);
 	}
 
 	public void disableAllButtons() {
 		attackButton.setEnabled(false);
+		skillAttackButton.setEnabled(false);
 		itemButton.setEnabled(false);
 		defendButton.setEnabled(false);
-		nextButton.setEnabled(false);
 	}
+	
 
 	private void addLogMessage(String message, boolean isPlayer) {
 		JLabel logLabel = new JLabel(message);
