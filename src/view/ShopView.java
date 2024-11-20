@@ -6,6 +6,7 @@ import java.util.List;
 import model.Item;
 import model.Player;
 import model.Shop;
+import util.UIUtils;
 
 public class ShopView extends JPanel {
     private Player player;
@@ -100,18 +101,23 @@ public class ShopView extends JPanel {
         Item selectedItem = (Item) itemPanel.getClientProperty("selectedItem");
         if (selectedItem != null) {
             if (player.getMoney() >= selectedItem.getPrice()) {
-                player.buyItem(selectedItem);
-                player.setMoney(player.getMoney() - selectedItem.getPrice());
-                selectedItem.increaseQuantity(1);
-                updatePlayerInfo();
-                JOptionPane.showMessageDialog(this, selectedItem.getName() + "을(를) 구매하였습니다.");
+                player.buyItem(selectedItem); // 플레이어가 아이템 구매
+                player.setMoney(player.getMoney() - selectedItem.getPrice()); // 금액 차감
+
+                // GameView에 아이템 추가
+                GameView gameView = (GameView) mainFrame.getContentPane().getComponent(2);
+                gameView.addItemToInventory(selectedItem);
+
+                updatePlayerInfo(); // 플레이어 정보 갱신
             } else {
-                JOptionPane.showMessageDialog(this, "금액이 부족합니다.");
+                UIUtils.indicateError(buyButton); // 돈이 부족한 경우
             }
         } else {
-            JOptionPane.showMessageDialog(this, "아이템을 선택하세요.");
+            UIUtils.indicateError(buyButton); // 아이템이 선택되지 않았을 때
         }
     }
+
+
 
     private void updatePlayerInfo() {
         playerInfoLabel.setText("플레이어: " + player.getName() + " | 금액: " + player.getMoney());

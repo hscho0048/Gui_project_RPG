@@ -17,7 +17,7 @@ public class GameView extends JPanel {
     private JLabel playerImageLabel, opponentImageLabel;
     private JLabel playerInfoLabel, opponentInfoLabel, stageLabel;
     private JProgressBar playerHealthBar, opponentHealthBar;
-    private JButton attackButton, itemButton, defendButton, nextButton, homeButton;
+    private JButton attackButton, defendButton, nextButton, homeButton;
     private JPanel logPanel;
     private JScrollPane logScrollPane;
     private Player player;
@@ -31,6 +31,8 @@ public class GameView extends JPanel {
     private static final int MAX_STAGE = 2;
     private JFrame mainFrame;
     private GameController gameController;
+    private JPanel inventoryPanel; // 아이템 인벤토리 패널
+
 
     public GameView(String playerName, UserController userController, Player player, JFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -76,9 +78,6 @@ public class GameView extends JPanel {
         attackButton = new JButton("공격");
         attackButton.addActionListener(e -> handleAttackButton());
 
-        itemButton = new JButton("아이템 사용");
-        itemButton.addActionListener(e -> showItemSelection());
-
         defendButton = new JButton("방어");
         defendButton.addActionListener(e -> playerDefend());
 
@@ -89,31 +88,39 @@ public class GameView extends JPanel {
         homeButton = new JButton("홈으로");
         homeButton.addActionListener(e -> returnToHome());
 
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 5));
+        // 4개의 버튼만 추가하도록 GridLayout 수정
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 4));
         buttonPanel.add(attackButton);
-        buttonPanel.add(itemButton);
         buttonPanel.add(defendButton);
         buttonPanel.add(nextButton);
         buttonPanel.add(homeButton);
 
+        // 컴포넌트 추가
         add(stageLabel, BorderLayout.NORTH);
         add(logScrollPane, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
     }
+
 
     private void initializePlayerPanel() {
         playerImageLabel = new JLabel(new ImageIcon("resources/playerImage.jpg"));
         playerInfoLabel = new JLabel();
         playerHealthBar = new JProgressBar();
 
+        inventoryPanel = new JPanel(); // 인벤토리 패널 생성
+        inventoryPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        inventoryPanel.setBorder(BorderFactory.createTitledBorder("인벤토리"));
+
         JPanel playerPanel = new JPanel();
         playerPanel.setLayout(new BoxLayout(playerPanel, BoxLayout.Y_AXIS));
         playerPanel.add(playerImageLabel);
         playerPanel.add(playerInfoLabel);
         playerPanel.add(playerHealthBar);
+        playerPanel.add(inventoryPanel); // 인벤토리 추가
 
         add(playerPanel, BorderLayout.WEST);
     }
+
 
     private void initializeOpponentPanel() {
         opponentImageLabel = new JLabel(new ImageIcon("resources/opponentImage.jpg"));
@@ -128,7 +135,20 @@ public class GameView extends JPanel {
 
         add(opponentPanel, BorderLayout.EAST);
     }
+    public void addItemToInventory(Item item) {
+        JButton itemButton = new JButton(item.getName());
+        itemButton.setIcon(item.getImage());
+        itemButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        itemButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        itemButton.setToolTipText("잔여량: " + item.getQuantity());
 
+        itemButton.addActionListener(e -> useItem(item, itemButton)); // 클릭 시 아이템 사용
+        inventoryPanel.add(itemButton); // 인벤토리에 추가
+        inventoryPanel.revalidate();
+        inventoryPanel.repaint();
+    }
+
+    
     private void setupHealthBar(JProgressBar healthBar, int currentHealth, int maxHealth) {
         healthBar.setMaximum(maxHealth);
         healthBar.setValue(currentHealth);
@@ -141,6 +161,7 @@ public class GameView extends JPanel {
             JOptionPane.showMessageDialog(this, "상대의 턴입니다. 기다려 주세요.", "알림", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
+
         int damage = player.getAttackPower() + random.nextInt(50);
         int finalDamage = opponent.takeDamage(damage);
         updateStatus("플레이어가 " + finalDamage + " 데미지를 입혔습니다!");
@@ -155,52 +176,25 @@ public class GameView extends JPanel {
         }
     }
 
-    private void showItemSelection() {
-        if (!isPlayerTurn) {
-            JOptionPane.showMessageDialog(this, "상대의 턴입니다. 기다려 주세요.", "알림", JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
 
-        List<Item> inventory = player.getInventory();
-        if (inventory == null || inventory.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "인벤토리에 아이템이 없습니다.", "알림", JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
-
-        String[] itemNames = new String[inventory.size()];
-        for (int i = 0; i < inventory.size(); i++) {
-            Item item = inventory.get(i);
-            itemNames[i] = item.getName() + " (잔여량: " + item.getQuantity() + ")";
-        }
-
-        String selectedItem = (String) JOptionPane.showInputDialog(this, "사용할 아이템을 선택하세요: ", "아이템 선택",
-                JOptionPane.PLAIN_MESSAGE, null, itemNames, itemNames[0]);
-
-        if (selectedItem != null) {
-            for (Item item : inventory) {
-                if (selectedItem.startsWith(item.getName())) {
-                    useItem(item.getName());
-                    item.decreaseQuantity(1);
-                    break;
-                }
-            }
-        }
-
-        endPlayerTurn();
-    }
-
-    private void useItem(String selectedItem) {
-        if ("체력 회복 물약".equals(selectedItem)) {
+    private void useItem(Item item, JButton itemButton) {
+        if ("체력 회복 물약".equals(item.getName())) {
             int healAmount = 30;
             int actualHeal = Math.min(healAmount, player.getMaxHealth() - player.getHealth());
             player.heal(actualHeal);
-            updateStatus("체력을 " + actualHeal + "만큼 회복했습니다!");
+            updateStatus(item.getName() + "을(를) 사용하여 체력을 " + actualHeal + " 회복했습니다!");
             updatePlayerInfo();
-        } else if ("공격력 증가 물약".equals(selectedItem)) {
+        } else if ("공격력 증가 물약".equals(item.getName())) {
             player.increaseAttackPower(10);
-            updateStatus("공격력이 증가했습니다!");
-        } else {
-            updateStatus("알 수 없는 아이템입니다.");
+            updateStatus(item.getName() + "을(를) 사용하여 공격력이 증가했습니다!");
+        }
+
+        // 아이템 수량 감소 및 버튼 제거
+        item.decreaseQuantity(1);
+        if (item.getQuantity() <= 0) {
+            inventoryPanel.remove(itemButton); // 버튼 제거
+            inventoryPanel.revalidate();
+            inventoryPanel.repaint();
         }
     }
 
@@ -217,7 +211,6 @@ public class GameView extends JPanel {
     private void endPlayerTurn() {
         isPlayerTurn = false;
         attackButton.setEnabled(false);
-        itemButton.setEnabled(false);
         defendButton.setEnabled(false);
 
         scheduleOpponentTurn();
@@ -254,28 +247,36 @@ public class GameView extends JPanel {
     private void startPlayerTurn() {
         isPlayerTurn = true;
         attackButton.setEnabled(true);
-        itemButton.setEnabled(true);
         defendButton.setEnabled(true);
         updateStatus("플레이어의 턴입니다!");
     }
 
     private void nextStage() {
         if (!gameController.isLastStage()) {
-            gameController.nextStage(); // GameController에서 스테이지 전환
-            opponent = gameController.getOpponent(); // 새로운 상대 가져오기
+            gameController.nextStage();
+            opponent = gameController.getOpponent();
 
-            updateStatus("Stage " + gameController.getCurrentStage() + " 시작!");
-            updateStage(gameController.getCurrentStage());
+            updatePlayerInfo();
             updateOpponentInfo();
+            updateStage(gameController.getCurrentStage());
+            updateOpponentImage();
 
             if (gameController.isBossMonster()) {
-                updateStatus("보스 몬스터 등장: " + opponent.getName());
-                JOptionPane.showMessageDialog(this, "스테이지 2: 보스 몬스터가 등장했습니다!", "보스 등장", JOptionPane.WARNING_MESSAGE);
+                updateStatus("보스 몬스터가 등장했습니다: " + opponent.getName());
             }
         } else {
             endGame();
         }
     }
+
+    private void updateOpponentImage() {
+        if (gameController.isBossMonster()) {
+            opponentImageLabel.setIcon(new ImageIcon("resources/bossImage.jpg"));
+        } else {
+            opponentImageLabel.setIcon(new ImageIcon("resources/opponentImage.jpg"));
+        }
+    }
+
 
 
 
@@ -303,7 +304,6 @@ public class GameView extends JPanel {
     private void handlePlayerDeath() {
         updateStatus("플레이어가 패배했습니다!");
         attackButton.setEnabled(false);
-        itemButton.setEnabled(false);
         defendButton.setEnabled(false);
 
         JOptionPane.showMessageDialog(this, "플레이어가 패배했습니다. 홈으로 돌아갑니다.");
@@ -336,6 +336,7 @@ public class GameView extends JPanel {
         logPanel.revalidate(); // 레이아웃 갱신
         logPanel.repaint(); // 화면 갱신
     }
+    
 
 
     private void returnToHome() {

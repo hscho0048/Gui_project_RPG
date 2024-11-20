@@ -3,6 +3,7 @@ package view;
 import javax.swing.*;
 import java.awt.*;
 import controller.UserController;
+import util.UIUtils;
 
 public class LoginView extends JPanel {
     private JTextField usernameField;
@@ -40,20 +41,12 @@ public class LoginView extends JPanel {
         add(signUpButton);
     }
 
-    private void indicateError(JButton button) {
-        Color originalColor = button.getBackground(); // 원래 색상 저장
-        button.setBackground(Color.RED); // 빨간색으로 변경
-        Timer timer = new Timer(200, e -> button.setBackground(originalColor)); // 200ms 후 복구
-        timer.setRepeats(false); // 한 번만 실행
-        timer.start();
-    }
-
     private void login() {
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
 
         if (username.isEmpty() || password.isEmpty()) {
-            indicateError(loginButton); // 입력이 비어 있을 경우 에러 표시
+            UIUtils.indicateError(loginButton); // 입력이 비어 있을 경우 버튼 색상 변경
             return;
         }
 
@@ -62,8 +55,8 @@ public class LoginView extends JPanel {
             CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
             cardLayout.show(mainFrame.getContentPane(), "HomeView");
         } else {
-            // 로그인 실패 시 버튼 색상으로 알림
-            indicateError(loginButton);
+            // 로그인 실패 시 버튼 색상 변경
+            UIUtils.indicateError(loginButton);
         }
     }
 }
