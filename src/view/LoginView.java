@@ -40,16 +40,30 @@ public class LoginView extends JPanel {
         add(signUpButton);
     }
 
+    private void indicateError(JButton button) {
+        Color originalColor = button.getBackground(); // 원래 색상 저장
+        button.setBackground(Color.RED); // 빨간색으로 변경
+        Timer timer = new Timer(200, e -> button.setBackground(originalColor)); // 200ms 후 복구
+        timer.setRepeats(false); // 한 번만 실행
+        timer.start();
+    }
+
     private void login() {
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
 
+        if (username.isEmpty() || password.isEmpty()) {
+            indicateError(loginButton); // 입력이 비어 있을 경우 에러 표시
+            return;
+        }
+
         if (userController.authenticate(username, password)) {
-            JOptionPane.showMessageDialog(this, "로그인 성공!", "알림", JOptionPane.INFORMATION_MESSAGE);
+            // 로그인 성공 시 홈 화면으로 이동
             CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
             cardLayout.show(mainFrame.getContentPane(), "HomeView");
         } else {
-            JOptionPane.showMessageDialog(this, "아이디 또는 비밀번호가 올바르지 않습니다.", "오류", JOptionPane.ERROR_MESSAGE);
+            // 로그인 실패 시 버튼 색상으로 알림
+            indicateError(loginButton);
         }
     }
 }
