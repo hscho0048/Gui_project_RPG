@@ -13,8 +13,8 @@ public class LoginView extends JPanel {
     private JButton loginButton, signUpButton;
     private UserController userController;
     private JFrame mainFrame;
-    
- // 로그인 성공 리스너 인터페이스
+
+    // 로그인 성공 리스너 인터페이스
     public interface OnLoginSuccessListener {
         void onLoginSuccess(String userId); // 로그인 성공 시 호출
     }
@@ -49,6 +49,7 @@ public class LoginView extends JPanel {
         add(loginButton);
         add(signUpButton);
     }
+
     public void setOnLoginSuccessListener(OnLoginSuccessListener listener) {
         this.onLoginSuccessListener = listener;
     }
@@ -70,14 +71,18 @@ public class LoginView extends JPanel {
                 JOptionPane.showMessageDialog(this, "플레이어 정보를 가져오는 데 실패했습니다.", "오류", JOptionPane.ERROR_MESSAGE);
                 return;
             }
+
+            // player 객체에 ID를 명시적으로 설정 (로그인 후 받아온 userId를 설정)
+            int userId = userController.getUserId(username);  // getUserId()는 로그인 후 userId를 가져오는 메서드
+            player.setId(userId);  // player 객체에 userId 설정
+            System.out.println("디버깅: 로그인 후 player ID: " + player.getId());  // userId가 제대로 설정되었는지 확인
+            
             // MyCharacter 초기화
             MyCharacter globalMyCharacter = new MyCharacter();
 
             // HomeView 초기화
             HomeView homeView = new HomeView(userController, mainFrame, globalMyCharacter, player);
             mainFrame.getContentPane().add(homeView, "HomeView");
-
-  
 
             // HomeView로 이동
             CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
@@ -88,5 +93,5 @@ public class LoginView extends JPanel {
             JOptionPane.showMessageDialog(this, "아이디 또는 비밀번호가 올바르지 않습니다.", "오류", JOptionPane.ERROR_MESSAGE);
         }
     }
-
 }
+

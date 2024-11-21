@@ -245,23 +245,74 @@ public class UserController {
 	        System.out.println("아이템 구매 기록 저장 실패: " + e.getMessage());
 	    }
 	}
+	public boolean updateCharacterName(int userId, String characterName) {
+	    String query = "UPDATE users SET character_name = ? WHERE id = ?";
 
-	public Player getPlayerInfo(String userId) {
-	    String query = "SELECT id, username, money FROM users WHERE username = ?";
+	    // 디버깅: 쿼리와 변수 값 확인
+	    System.out.println("디버깅: UPDATE 쿼리 실행 시작");
+	    System.out.println("쿼리: " + query);
+	    System.out.println("userId: " + userId + ", characterName: " + characterName);
+
 	    try (PreparedStatement stmt = connection.prepareStatement(query)) {
-	        stmt.setString(1, userId);
-	        ResultSet rs = stmt.executeQuery();
-	        if (rs.next()) {
-	            int id = rs.getInt("id");
-	            String name = rs.getString("username");
-	            int money = rs.getInt("money"); // money 컬럼 읽기
-	            return new Player(id, name, money);
+	        stmt.setString(1, characterName);  // 선택된 캐릭터 이름
+	        stmt.setInt(2, userId);  // 플레이어 ID
+
+	        // 디버깅: 쿼리 실행 전
+	        System.out.println("디버깅: 쿼리 실행 중...");
+
+	        int rowsAffected = stmt.executeUpdate();
+
+	        // 디버깅: 쿼리 실행 후 결과
+	        if (rowsAffected > 0) {
+	            System.out.println("디버깅: " + userId + "의 캐릭터가 " + characterName + "으로 업데이트되었습니다.");
+	            return true;
+	        } else {
+	            System.out.println("디버깅: 업데이트된 행이 없습니다. (해당 user_id가 존재하지 않거나 값이 변경되지 않음)");
+	            return false;
 	        }
 	    } catch (SQLException e) {
-	        System.out.println("플레이어 정보 조회 실패: " + e.getMessage());
+	        // 디버깅: SQL 예외 처리
+	        System.out.println("디버깅: 캐릭터 업데이트 실패: " + e.getMessage());
+	        return false;
 	    }
-	    return null;
 	}
+	 public int getUserId(String username) {
+	        String query = "SELECT id FROM users WHERE username = ?";
+	        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+	            stmt.setString(1, username);  // username을 사용하여 ID를 가져옴
+	            ResultSet rs = stmt.executeQuery();
+	            
+	            if (rs.next()) {
+	                int userId = rs.getInt("id");
+	                // 디버깅: 쿼리에서 반환된 userId 출력
+	                System.out.println("디버깅: getUserId()에서 반환된 userId: " + userId);
+	                return userId;  // 반환된 userId를 반환
+	            } else {
+	                System.out.println("디버깅: 해당 username에 대한 userId를 찾을 수 없음");
+	            }
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	        }
+	        return -1;  // ID를 찾을 수 없는 경우 -1 반환
+	    }
+	// 로그인 후 player 정보 반환
+    public Player getPlayerInfo(String username) {
+        String query = "SELECT * FROM users WHERE username = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                int userId = rs.getInt("id");
+                String name = rs.getString("username");
+                int money = rs.getInt("money");
+                return new Player(userId, name, money);  // Player 객체 반환
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null; // 유저가 없으면 null 반환
+    }
 	public boolean updateItem(String username, String itemName) {
 	    String query = "UPDATE users SET items = ? WHERE username = ?";
 	    try (PreparedStatement stmt = connection.prepareStatement(query)) {

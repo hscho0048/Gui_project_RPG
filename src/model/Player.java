@@ -127,6 +127,14 @@ public class Player {
     public int getUserId() {
         return userId;
     }
+    
+ // Getter and setter for id
+    public int getId() {
+        return id;
+    }
+    public void setId(int id) {
+        this.id = id;  // Player 객체에 ID 설정
+    }
 
     public void addItem(Item item) {
         inventory.add(item);
@@ -198,6 +206,9 @@ public class Player {
         this.characterImage = null;
         this.inventory = new ArrayList<>();
         this.money = 100; // 기본 소지금
+    }
+    public void setPlayerId(int id) {
+        this.id = id;
     }
 
 

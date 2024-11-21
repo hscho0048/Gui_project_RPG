@@ -28,6 +28,9 @@ public class HomeView extends JPanel {
         this.myCharacter = myCharacter;
         this.player = player;
 
+        // 디버깅: HomeView에서 받은 userId 확인
+        System.out.println("디버깅: HomeView에서 받은 userId: " + player.getId());
+
         setLayout(new BorderLayout()); // 전체 레이아웃 설정
         initializeRankingTableAndButtons();
 
@@ -61,6 +64,29 @@ public class HomeView extends JPanel {
 
         // 초기 랭킹 로드
         updateRanking();
+    }
+
+    // 캐릭터 선택 후 업데이트
+    public boolean updateCharacter(String characterName) {
+        int userId = player.getId();  // 로그인된 플레이어의 ID를 가져옵니다.
+
+        // 디버깅: ID 확인
+        System.out.println("디버깅: HomeView에서 받은 userId: " + userId);
+
+        if (userId == 0) {
+            JOptionPane.showMessageDialog(this, "플레이어 ID가 잘못 설정되었습니다.", "오류", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        boolean updateSuccess = userController.updateCharacterName(userId, characterName); // 데이터베이스 업데이트
+
+        if (updateSuccess) {
+            updateRanking();  // 캐릭터 업데이트 후 랭킹 갱신
+        } else {
+            JOptionPane.showMessageDialog(this, "캐릭터 업데이트 실패", "오류", JOptionPane.ERROR_MESSAGE);
+        }
+
+        return updateSuccess;
     }
 
     private void showGameView() {
@@ -134,8 +160,6 @@ public class HomeView extends JPanel {
         CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
         cardLayout.show(mainFrame.getContentPane(), "CharacterView");
     }
-
-    // TurnCount 업데이트 메서드
     public void updateTurnCount(int turnCount) {
         DefaultTableModel tableModel = (DefaultTableModel) rankingTable.getModel();
         int rowCount = tableModel.getRowCount();
@@ -168,9 +192,8 @@ public class HomeView extends JPanel {
     }
 
     public void updateRanking() {
-        // 기존 JTable 모델 가져오기
         DefaultTableModel tableModel = (DefaultTableModel) rankingTable.getModel();
-        tableModel.setRowCount(0);
+        tableModel.setRowCount(0); // 테이블 초기화
 
         ResultSet rs = userController.getRanking();
         if (rs == null) {
@@ -183,13 +206,13 @@ public class HomeView extends JPanel {
             while (rs.next()) {
                 hasData = true;
                 int rank = rs.getInt("rank");
-                String player = rs.getString("player");
+                String playerName = rs.getString("player");
                 String character = rs.getString("character") != null ? rs.getString("character") : "UNKNOWN";
                 String items = rs.getString("items") != null ? rs.getString("items") : "없음";
                 int turns = rs.getInt("turns");
                 int stage = rs.getInt("stage");
 
-                tableModel.addRow(new Object[]{rank, player, character, items, turns, stage});
+                tableModel.addRow(new Object[]{rank, playerName, character, items, turns, stage});
             }
 
             if (!hasData) {
@@ -237,3 +260,4 @@ public class HomeView extends JPanel {
         updateRanking();
     }
 }
+
