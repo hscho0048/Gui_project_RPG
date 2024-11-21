@@ -62,32 +62,43 @@ public class GameView extends JPanel {
     }
 
     private void initializeUI() {
-        // 스테이지 레이블
-        stageLabel = new JLabel("Stage 1");
+        // 상단 패널 (스테이지 및 플레이어 정보 포함)
+        JPanel topPanel = new JPanel(new BorderLayout());
+
+        // 스테이지 레이블 초기화
+        stageLabel = new JLabel("Stage " + gameController.getCurrentStage());
         stageLabel.setFont(new Font("Serif", Font.BOLD, 24));
         stageLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-        // 턴 수 레이블
+        // 플레이어 정보 및 상대 패널 초기화
+        initializePlayerPanel();
+        initializeOpponentPanel();
+     // 턴 수 레이블 초기화
         turnCountLabel = new JLabel("턴 수: " + turnCount);
         turnCountLabel.setFont(new Font("Serif", Font.PLAIN, 16));
         turnCountLabel.setHorizontalAlignment(SwingConstants.LEFT);
 
-        // 상단 패널 (스테이지와 턴 수를 포함)
-        JPanel topPanel = new JPanel(new BorderLayout());
+     // 상단 패널 구성
         topPanel.add(stageLabel, BorderLayout.CENTER);
         topPanel.add(turnCountLabel, BorderLayout.WEST);
 
+        // 전체 레이아웃에 상단 패널 추가
         add(topPanel, BorderLayout.NORTH);
 
+        // 로그와 버튼 초기화
+        initializeLogAndButtons();
+    }
+
+
+    // 로그와 버튼 초기화 메서드
+    private void initializeLogAndButtons() {
         // 로그 패널
         logPanel = new JPanel();
         logPanel.setLayout(new BoxLayout(logPanel, BoxLayout.Y_AXIS));
         logScrollPane = new JScrollPane(logPanel);
         logScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
-        initializePlayerPanel();
-        initializeOpponentPanel();
-
+        // 버튼 패널
         attackButton = new JButton("공격");
         attackButton.addActionListener(e -> handleAttackButton());
 
@@ -112,13 +123,16 @@ public class GameView extends JPanel {
     }
 
 
-
     private void initializePlayerPanel() {
-        playerImageLabel = new JLabel(new ImageIcon("resources/playerImage.jpg"));
-        playerInfoLabel = new JLabel();
+        playerImageLabel = new JLabel(player.getCharacterImage());
+        playerInfoLabel = new JLabel("플레이어: " + player.getName() + " | 체력: " + player.getHealth());
         playerHealthBar = new JProgressBar();
 
-        inventoryPanel = new JPanel(); // 인벤토리 패널 생성
+        // 플레이어의 체력 바 설정
+        setupHealthBar(playerHealthBar, player.getHealth(), player.getMaxHealth());
+
+     // 인벤토리 패널 초기화
+        inventoryPanel = new JPanel();
         inventoryPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         inventoryPanel.setBorder(BorderFactory.createTitledBorder("인벤토리"));
 
@@ -133,19 +147,26 @@ public class GameView extends JPanel {
     }
 
 
+
     private void initializeOpponentPanel() {
         opponentImageLabel = new JLabel(new ImageIcon("resources/opponentImage.jpg"));
-        opponentInfoLabel = new JLabel();
+        opponentInfoLabel = new JLabel("상대: " + opponent.getName() + " | 체력: " + opponent.getHealth());
         opponentHealthBar = new JProgressBar();
 
+        // 상대의 체력 바 설정
+        setupHealthBar(opponentHealthBar, opponent.getHealth(), opponent.getMaxHealth());
+
+        // 상대 패널 구성
         JPanel opponentPanel = new JPanel();
         opponentPanel.setLayout(new BoxLayout(opponentPanel, BoxLayout.Y_AXIS));
         opponentPanel.add(opponentImageLabel);
         opponentPanel.add(opponentInfoLabel);
         opponentPanel.add(opponentHealthBar);
 
+        // 레이아웃에 상대 패널 추가
         add(opponentPanel, BorderLayout.EAST);
     }
+
     public void addItemToInventory(Item item) {
         JButton itemButton = new JButton(item.getName());
         itemButton.setIcon(item.getImage());
@@ -166,6 +187,7 @@ public class GameView extends JPanel {
         healthBar.setString(currentHealth + " / " + maxHealth);
         healthBar.setStringPainted(true);
     }
+
 
     private void handleAttackButton() {
         if (!isPlayerTurn) {
@@ -355,6 +377,7 @@ public class GameView extends JPanel {
         logPanel.revalidate(); // 레이아웃 갱신
         logPanel.repaint(); // 화면 갱신
     }
+
     
 
 

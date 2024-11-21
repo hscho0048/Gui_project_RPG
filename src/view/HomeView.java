@@ -5,16 +5,22 @@ import java.awt.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import controller.UserController;
+import model.MyCharacter;
+import model.Player;
 
 public class HomeView extends JPanel {
     private JButton battleButton, shopButton, characterSelectButton;
     private JTextArea rankingTextArea; // 랭킹 정보를 표시할 텍스트 영역
     private UserController userController;
     private JFrame mainFrame;
+    private MyCharacter myCharacter; // MyCharacter 객체
+    private Player player;
 
-    public HomeView(UserController userController, JFrame mainFrame) {
+    public HomeView(UserController userController, JFrame mainFrame, MyCharacter myCharacter) {
         this.userController = userController;
         this.mainFrame = mainFrame;
+        this.myCharacter = myCharacter;
+        
 
         setLayout(new BorderLayout()); // 전체 레이아웃 설정
 
@@ -25,7 +31,7 @@ public class HomeView extends JPanel {
         shopButton = new JButton("상점");
         shopButton.addActionListener(e -> showShopView());
         characterSelectButton = new JButton("캐릭터 선택");
-        characterSelectButton.addActionListener(e -> JOptionPane.showMessageDialog(this, "캐릭터 선택은 아직 구현되지 않았습니다."));
+        characterSelectButton.addActionListener(e -> showCharacterView()); // 캐릭터 선택
 
         buttonPanel.add(battleButton);
         buttonPanel.add(shopButton);
@@ -57,6 +63,22 @@ public class HomeView extends JPanel {
     private void showShopView() {
         CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
         cardLayout.show(mainFrame.getContentPane(), "ShopView");
+    }
+    private void showCharacterView() {
+        if (player == null) {
+            JOptionPane.showMessageDialog(this, "플레이어 정보가 없습니다. 다시 로그인해주세요.", "오류", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        CharacterView characterView = new CharacterView(player, myCharacter, this);
+        mainFrame.getContentPane().add(characterView, "CharacterView");
+        CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
+        cardLayout.show(mainFrame.getContentPane(), "CharacterView");
+    }
+
+    public void setPlayer(Player player) {
+        this.player = player;
+        System.out.println("플레이어 정보가 설정되었습니다: " + player.getName());
     }
 
     public void updateRanking() {

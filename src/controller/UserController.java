@@ -26,7 +26,7 @@ public class UserController {
 			System.out.println("데이터베이스 연결 실패.");
 		}
 	}
-
+	
 	// 비밀번호 해시 메서드 (SHA-256)
 	private String hashPassword(String password) {
 		try {
@@ -154,6 +154,18 @@ public class UserController {
 			return false;
 		}
 	}
+	public void updateCharacter(int userId, String characterName) {
+	    String query = "UPDATE users SET character_name = ? WHERE id = ?";
+	    try (PreparedStatement stmt = connection.prepareStatement(query)) {
+	        stmt.setString(1, characterName);
+	        stmt.setInt(2, userId);
+	        stmt.executeUpdate();
+	    } catch (SQLException e) {
+	        System.out.println("캐릭터 업데이트 실패: " + e.getMessage());
+	    }
+	}
+
+
 
 	public ResultSet getRanking() {
 	    String query = """
@@ -191,10 +203,10 @@ public class UserController {
 	        System.out.println("아이템 구매 기록 저장 실패: " + e.getMessage());
 	    }
 	}
-	public Player getPlayerInfo(String username) {
+	public Player getPlayerInfo(String userId) {
 	    String query = "SELECT id, username, money FROM users WHERE username = ?";
 	    try (PreparedStatement stmt = connection.prepareStatement(query)) {
-	        stmt.setString(1, username);
+	        stmt.setString(1, userId);
 	        ResultSet rs = stmt.executeQuery();
 	        if (rs.next()) {
 	            int id = rs.getInt("id");

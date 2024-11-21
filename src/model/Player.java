@@ -7,17 +7,22 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.ImageIcon;
+
 public class Player {
 	private int userId;
     private String name;
     private int health;
     private int maxHealth;
     private int attackPower;
+    private int specialPower; // 특수 공격력
+    private ImageIcon characterImage; // 캐릭터 이미지
     private boolean isDefending;
     private List<Item> inventory; // 인벤토리 추가
     private int money; // 돈 필드 추가
     private Connection connection;
 	private int id;
+	 private String characterName;
 
     public Player(String name, int maxHealth, int attackPower) {
         this.name = name;
@@ -34,6 +39,8 @@ public class Player {
         this.maxHealth = 100; // 기본 최대 체력
         this.health = this.maxHealth; // 현재 체력
         this.attackPower = 10; // 기본 공격력
+        this.specialPower = 0; // 초기 특수 공격력
+        this.characterImage = null; // 초기 캐릭터 이미지
         this.isDefending = false;
         this.inventory = new ArrayList<>(); // 인벤토리 초기화
         this.money = money; // 소지금 초기화
@@ -84,10 +91,27 @@ public class Player {
     public int getAttackPower() {
         return attackPower;
     }
+    public int getSpecialPower() {
+        return specialPower;
+    }
+ // 캐릭터 이름 Getter
+    public String getCharacterName() {
+        return characterName;
+    }
+
+    // 캐릭터 이름 Setter
+    public void setCharacterName(String characterName) {
+        this.characterName = characterName;
+    }
 
     public void reset() {
-        this.health = this.maxHealth; // 체력을 최대 체력으로 초기화
-        this.isDefending = false; // 방어 상태 해제
+    	this.health = this.maxHealth; // 체력을 최대 체력으로 초기화
+        this.isDefending = false; // 방어 상태 초기화
+        this.attackPower = 10; // 기본 공격력 초기화
+        this.specialPower = 0; // 기본 특수 공격력 초기화
+        this.characterImage = null; // 캐릭터 이미지 초기화
+        this.inventory.clear(); // 인벤토리 초기화
+        this.money = 100; // 기본 소지금 초기화
     }
 
 
@@ -152,6 +176,27 @@ public class Player {
             return false; // 돈 부족
         }
     }
+ // 캐릭터 상태 설정 메서드
+    public void setCharacterStats(int attackPower, int specialPower, ImageIcon characterImage) {
+        this.attackPower = attackPower;
+        this.specialPower = specialPower;
+        this.characterImage = characterImage;
+    }
+    public ImageIcon getCharacterImage() {
+        return characterImage;
+    }
+    public Player() {
+        this.name = "기본 플레이어";
+        this.health = 100;
+        this.maxHealth = 100;
+        this.attackPower = 10;
+        this.specialPower = 0;
+        this.characterImage = null;
+        this.inventory = new ArrayList<>();
+        this.money = 100; // 기본 소지금
+    }
+
+
     public Player getPlayerInfo(String userId) {
         String query = "SELECT id, username, money FROM users WHERE username = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
