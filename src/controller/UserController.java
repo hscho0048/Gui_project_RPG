@@ -5,6 +5,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+
+import javax.swing.table.DefaultTableModel;
 
 import model.Player;
 
@@ -22,10 +25,10 @@ public class UserController {
 			connection = DriverManager.getConnection(url, user, password);
 			System.out.println("데이터베이스에 연결되었습니다.");
 		} catch (SQLException e) {
-			e.printStackTrace();
-			System.out.println("데이터베이스 연결 실패.");
+			System.out.println("데이터베이스 연결 실패: " + e.getMessage());
 		}
 	}
+	
 	
 	// 비밀번호 해시 메서드 (SHA-256)
 	private String hashPassword(String password) {
@@ -90,19 +93,32 @@ public class UserController {
 	}
 
 	// 점수 업데이트 메서드: 게임이 끝날 때 턴 수로 점수를 업데이트
-	public boolean updateScore(String username, int turnCount) {
-		String query = "UPDATE users SET score = ? WHERE username = ?";
-		try (PreparedStatement stmt = connection.prepareStatement(query)) {
-			stmt.setInt(1, turnCount);
-			stmt.setString(2, username);
-			int rowsAffected = stmt.executeUpdate();
-			System.out.println(username + "의 점수가 " + turnCount + "으로 업데이트되었습니다.");
-			return rowsAffected > 0;
-		} catch (SQLException e) {
-			System.out.println("점수 업데이트 실패: " + e.getMessage());
-			return false;
-		}
+	public boolean updateTurns(String username, int turnCount) {
+	    // 업데이트 쿼리 작성
+	    String query = "UPDATE users SET turns = ? WHERE username = ?";
+	    try (PreparedStatement stmt = connection.prepareStatement(query)) {
+	        // 쿼리 파라미터 설정
+	        stmt.setInt(1, turnCount);  // turnCount 값을 첫 번째 파라미터로 설정
+	        stmt.setString(2, username);  // username 값을 두 번째 파라미터로 설정
+
+	        // 쿼리 실행
+	        int rowsAffected = stmt.executeUpdate();
+
+	        // 영향 받은 행 수 출력
+	        if (rowsAffected > 0) {
+	            System.out.println(username + "의 턴수가 " + turnCount + "으로 업데이트되었습니다.");
+	            return true;
+	        } else {
+	            System.out.println("사용자 " + username + "이(가) 존재하지 않거나 턴수 업데이트가 이루어지지 않았습니다.");
+	            return false;
+	        }
+	    } catch (SQLException e) {
+	        // 예외 처리
+	        System.out.println("턴수 업데이트 실패: " + e.getMessage());
+	        return false;
+	    }
 	}
+
 
 	// 특정 사용자의 점수 조회 메서드
 	public int getScore(String username) {
@@ -119,20 +135,6 @@ public class UserController {
 		} catch (SQLException e) {
 			System.out.println("점수 조회 실패: " + e.getMessage());
 			return -1;
-		}
-	}
-
-	// 랭킹 조회 메서드: 턴 수가 적은 순서로 정렬하여 가져옴
-	public void displayRanking() {
-		String query = "SELECT username, score FROM users ORDER BY score ASC";
-		try (PreparedStatement stmt = connection.prepareStatement(query)) {
-			ResultSet rs = stmt.executeQuery();
-			System.out.println("랭킹:");
-			while (rs.next()) {
-				System.out.println("ID: " + rs.getString("username") + ", 턴 수: " + rs.getInt("score"));
-			}
-		} catch (SQLException e) {
-			System.out.println("랭킹 조회 실패: " + e.getMessage());
 		}
 	}
 
@@ -165,30 +167,67 @@ public class UserController {
 	    }
 	}
 
-
-
 	public ResultSet getRanking() {
-	    String query = """
-	        SELECT 
-	            ROW_NUMBER() OVER (ORDER BY score ASC) AS `rank`, -- 순위
-	            username AS player,                              -- 사용자 이름
-	            'UNKNOWN' AS 'character',                         -- 캐릭터 필드: UNKNOWN 값
-	            GROUP_CONCAT(p.item_name SEPARATOR ', ') AS items, -- 구매 아이템
-	            score AS turns                                  -- 턴 수
-	        FROM users u
-	        LEFT JOIN purchases p ON u.id = p.user_id          -- 구매 정보와 사용자 연결
-	        GROUP BY u.id
-	        ORDER BY score ASC;
-	    """;
+	    String initializeRankQuery = "SET @rank = 0;";  // rank 변수 초기화
+	    String rankingQuery = "SELECT (@rank := @rank + 1) AS `rank`, " +
+	                          "u.username AS player, " +
+	                          "`character_name` AS 'character', " + 
+	                          "IFNULL(u.items, '없음') AS 'items', " + 
+	                          "u.turns AS turns, " +  // 턴수 추가
+	                          "us.stage AS stage " +  // 완료한 스테이지 추가
+	                          "FROM users u " +
+	                          "LEFT JOIN user_stage us ON u.username = us.username " +
+	                          "ORDER BY u.turns DESC, us.stage DESC;";  // 턴수와 스테이지에 따라 정렬
 
 	    try {
-	        PreparedStatement stmt = connection.prepareStatement(query);
-	        return stmt.executeQuery();
+	        Statement stmt = connection.createStatement();
+	        stmt.execute(initializeRankQuery); // @rank 초기화
+	        return stmt.executeQuery(rankingQuery);  // 랭킹 데이터를 가져오는 쿼리 실행
 	    } catch (SQLException e) {
-	        System.out.println("랭킹 조회 실패: " + e.getMessage());
+	        System.err.println("랭킹 데이터를 가져오는 데 실패했습니다: " + e.getMessage());
 	        return null;
 	    }
 	}
+	// 랭킹 업데이트 메서드
+    public void updateRanking(DefaultTableModel tableModel) {
+        // 기존 테이블 모델 초기화
+        tableModel.setRowCount(0); // 기존 데이터 초기화
+
+        // 랭킹 데이터를 DB에서 가져오는 쿼리
+        String rankingQuery = "SELECT (@rank := @rank + 1) AS `rank`, " +
+                              "u.username AS player, " +
+                              "`character_name` AS 'character', " + 
+                              "IFNULL(u.items, '없음') AS 'items', " + 
+                              "u.turns AS turns, " +  // 턴수
+                              "us.stage AS stage " +  // 완료한 스테이지
+                              "FROM users u " +
+                              "LEFT JOIN user_stage us ON u.username = us.username " +
+                              "ORDER BY u.turns DESC, us.stage DESC;";  // 턴수와 스테이지에 따라 정렬
+
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(rankingQuery)) {
+
+            boolean hasData = false;
+            while (rs.next()) {
+                hasData = true;
+                int rank = rs.getInt("rank");
+                String player = rs.getString("player");
+                String character = rs.getString("character") != null ? rs.getString("character") : "UNKNOWN"; 
+                String items = rs.getString("items") != null ? rs.getString("items") : "없음";
+                int turns = rs.getInt("turns");
+                int stage = rs.getInt("stage");
+
+                // 데이터 추가
+                tableModel.addRow(new Object[]{rank, player, character, items, turns, stage});
+            }
+
+            if (!hasData) {
+                System.out.println("아직 플레이한 사용자가 없습니다.");
+            }
+        } catch (SQLException e) {
+            System.err.println("랭킹 데이터를 처리하는 중 오류 발생: " + e.getMessage());
+        }
+    }
 
 
 
@@ -219,12 +258,21 @@ public class UserController {
 	    }
 	    return null;
 	}
-
-
-
+	public void updatePlayerItems(String username, String updatedItems) {
+	    String query = "UPDATE users SET items = ? WHERE username = ?";
+	    try (PreparedStatement stmt = connection.prepareStatement(query)) {
+	        stmt.setString(1, updatedItems); // 아이템 이름을 쉼표로 구분하여 저장
+	        stmt.setString(2, username);
+	        stmt.executeUpdate();
+	    } catch (SQLException e) {
+	        System.err.println("아이템을 업데이트하는 데 실패했습니다: " + e.getMessage());
+	    }
+	}
+	
 	public Connection getConnection() {
         return connection;
     }
+	
 
 
 

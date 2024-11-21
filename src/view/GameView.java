@@ -14,6 +14,7 @@ import model.Item;
 import model.Opponent;
 
 public class GameView extends JPanel {
+	private HomeView homeView;  // HomeView 참조
     private JLabel playerImageLabel, opponentImageLabel;
     private JLabel playerInfoLabel, opponentInfoLabel, stageLabel;
     private JProgressBar playerHealthBar, opponentHealthBar;
@@ -286,6 +287,7 @@ public class GameView extends JPanel {
         nextButton.setEnabled(false);
         updateStatus("플레이어의 턴입니다!");
     }
+
     private void updateTurnCountLabel() {
         turnCountLabel.setText("턴 수: " + turnCount);
     }
@@ -350,7 +352,9 @@ public class GameView extends JPanel {
 
         JOptionPane.showMessageDialog(this, "플레이어가 패배했습니다. 홈으로 돌아갑니다.");
 
-        userController.updateScore(player.getName(), totalOpponentTurnCount);
+        userController.updateTurns(player.getName(), turnCount);
+        
+        
 
         // 플레이어 상태 초기화
         player.reset();
@@ -360,9 +364,17 @@ public class GameView extends JPanel {
 
     private void endGame() {
         updateStatus("게임이 종료되었습니다!");
-        userController.updateScore(player.getName(), totalOpponentTurnCount);
+        userController.updateTurns(player.getName(), turnCount);  // 나의 턴수로 점수 업데이트
+
+        // 게임 종료 후 턴수를 HomeView에 전달하여 업데이트
+        homeView.updateTurnCount(turnCount);  // HomeView에서 턴수를 업데이트하는 메서드 호출
+        homeView.updateRanking();  // HomeView에서 랭킹을 갱신하는 메서드 호출
+
         returnToHome();
+        
     }
+
+    
     public void restartGame() {
         gameController.resetGame(); // 게임 상태 초기화
         opponent = gameController.getOpponent(); // 초기화된 상대 가져오기

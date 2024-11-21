@@ -153,7 +153,7 @@ public class HomeView extends JPanel {
         DefaultTableModel tableModel = (DefaultTableModel) rankingTable.getModel();
         tableModel.setRowCount(0); // 기존 데이터 초기화
 
-        ResultSet rs = userController.getRanking();
+        ResultSet rs = userController.getRanking(); // userController에서 랭킹 데이터 가져오기
         if (rs == null) {
             JOptionPane.showMessageDialog(this, "랭킹 데이터를 불러오는 중 오류가 발생했습니다.", "오류", JOptionPane.ERROR_MESSAGE);
             return;
@@ -163,14 +163,15 @@ public class HomeView extends JPanel {
             boolean hasData = false;
             while (rs.next()) {
                 hasData = true;
-                int rank = rs.getInt("rank");
-                String player = rs.getString("player");
-                String character = rs.getString("character") != null ? rs.getString("character") : "UNKNOWN"; // 'UNKNOWN' 기본값 처리
+                int rank = rs.getInt("rank");  // 순위
+                String player = rs.getString("player");  // 플레이어 이름
+                String character = rs.getString("character") != null ? rs.getString("character") : "UNKNOWN"; 
                 String items = rs.getString("items") != null ? rs.getString("items") : "없음";
-                int turns = rs.getInt("turns");
+                int turns = rs.getInt("turns");  // 턴수
+                int stage = rs.getInt("stage");  // 완료한 스테이지
 
                 // 데이터 추가
-                tableModel.addRow(new Object[]{rank, player, character, items, turns});
+                tableModel.addRow(new Object[]{rank, player, character, items, turns, stage});
             }
 
             if (!hasData) {
@@ -180,6 +181,27 @@ public class HomeView extends JPanel {
             JOptionPane.showMessageDialog(this, "랭킹 데이터를 처리하는 중 오류 발생: " + e.getMessage(), "오류", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    
+    // 턴수 업데이트 메서드
+    public void updateTurnCount(int turnCount) {
+        DefaultTableModel tableModel = (DefaultTableModel) rankingTable.getModel();
+        int rowCount = tableModel.getRowCount();
+
+        // 랭킹 테이블에서 플레이어의 턴수를 업데이트 (예: 플레이어 이름이 1번 열에 있다고 가정)
+        for (int i = 0; i < rowCount; i++) {
+            String playerName = (String) tableModel.getValueAt(i, 1);  // 1번 열: 플레이어 이름
+            if (playerName.equals(player.getName())) {
+                tableModel.setValueAt(turnCount, i, 4);  // 4번 열: 턴수
+                break;
+            }
+        }
+
+        // 랭킹 업데이트
+        updateRanking();
+    }
+
+
     private void initializeRankingTableAndButtons() {
         // 버튼 패널 초기화
         JPanel buttonPanel = new JPanel(new GridLayout(3, 1)); // 세로로 버튼 배치
@@ -194,7 +216,7 @@ public class HomeView extends JPanel {
         buttonPanel.add(characterSelectButton);
 
         // 테이블 열 제목
-        String[] columnNames = {"순위", "플레이어", "캐릭터", "구매 아이템", "턴수"};
+        String[] columnNames = {"순위", "플레이어", "캐릭터", "구매 아이템", "턴수", "완료한 스테이지"};
 
         // DefaultTableModel 초기화
         DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0);
@@ -221,8 +243,10 @@ public class HomeView extends JPanel {
 
         // HomeView에 추가
         add(combinedPanel, BorderLayout.CENTER);
-    }
 
+        // 랭킹 데이터 갱신
+        updateRanking();
+    }
 
 
     public void initializeGameAndShopViews() {
