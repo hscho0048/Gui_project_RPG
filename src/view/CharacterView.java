@@ -8,7 +8,7 @@ import model.Character;
 import model.MyCharacter;
 import model.Player;
 
-public class CharacterView extends JFrame {
+public class CharacterView extends JPanel {
 	private static final long serialVersionUID = 1L;
 	
 	private Player player;
@@ -26,10 +26,8 @@ public class CharacterView extends JFrame {
 		this.myCharacter = myCharacter;
 		this.homeView = homeView;
 		
-		setTitle("캐릭터 선택");
-		setSize(800, 600);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLayout(new BorderLayout());
+		initializeUI();
 		
 		Font font = new Font("Default", Font.BOLD, 15);
 		
@@ -68,6 +66,30 @@ public class CharacterView extends JFrame {
 		
 		setVisible(true);
 	}
+	 private void initializeUI() {
+	        JLabel titleLabel = new JLabel("캐릭터 선택");
+	        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+	        add(titleLabel, BorderLayout.NORTH);
+
+	        // 캐릭터 선택 UI 추가
+	        JPanel characterPanel = new JPanel();
+	        characterPanel.setLayout(new GridLayout(1, 2)); // 예제: 2개의 캐릭터 버튼 추가
+
+	        JButton warriorButton = new JButton("전사");
+	        JButton mageButton = new JButton("마법사");
+
+	        warriorButton.addActionListener(e -> selectCharacter("전사"));
+	        mageButton.addActionListener(e -> selectCharacter("마법사"));
+
+	        characterPanel.add(warriorButton);
+	        characterPanel.add(mageButton);
+
+	        add(characterPanel, BorderLayout.CENTER);
+
+	        JButton backButton = new JButton("뒤로가기");
+	        backButton.addActionListener(e -> returnToHome());
+	        add(backButton, BorderLayout.SOUTH);
+	    }
 
 	public void updateCharacterList(List<Character> characters) {
 		characterModel.clear();
@@ -77,6 +99,16 @@ public class CharacterView extends JFrame {
 			}
 		}
 	}
+	private void selectCharacter(String characterName) {
+        player.setCharacterName(characterName); // 캐릭터 설정
+        JOptionPane.showMessageDialog(this, characterName + " 캐릭터가 선택되었습니다.");
+        returnToHome();
+    }
+
+    private void returnToHome() {
+        CardLayout cardLayout = (CardLayout) homeView.getParent().getLayout();
+        cardLayout.show(homeView.getParent(), "HomeView");
+    }
 	
 	private void handleBack() {
 		this.setVisible(false);

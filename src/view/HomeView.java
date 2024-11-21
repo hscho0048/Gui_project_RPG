@@ -15,11 +15,15 @@ public class HomeView extends JPanel {
     private JFrame mainFrame;
     private MyCharacter myCharacter; // MyCharacter 객체
     private Player player;
+    
+    private GameView gameView;
+    private ShopView shopView;
 
-    public HomeView(UserController userController, JFrame mainFrame, MyCharacter myCharacter) {
+    public HomeView(UserController userController, JFrame mainFrame, MyCharacter myCharacter, Player player) {
         this.userController = userController;
         this.mainFrame = mainFrame;
         this.myCharacter = myCharacter;
+        this.player = player;
         
 
         setLayout(new BorderLayout()); // 전체 레이아웃 설정
@@ -56,25 +60,81 @@ public class HomeView extends JPanel {
     }
 
     private void showGameView() {
-        CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
-        cardLayout.show(mainFrame.getContentPane(), "GameView");
-    }
-
-    private void showShopView() {
-        CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
-        cardLayout.show(mainFrame.getContentPane(), "ShopView");
-    }
-    private void showCharacterView() {
         if (player == null) {
             JOptionPane.showMessageDialog(this, "플레이어 정보가 없습니다. 다시 로그인해주세요.", "오류", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
+        // GameView가 추가되어 있는지 확인
+        for (Component component : mainFrame.getContentPane().getComponents()) {
+            if (component instanceof GameView) {
+                // GameView가 이미 추가되어 있으면 해당 화면으로 전환
+                CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
+                cardLayout.show(mainFrame.getContentPane(), "GameView");
+                return;
+            }
+        }
+
+        // GameView 생성 및 추가
+        GameView gameView = new GameView(player.getName(), userController, player, mainFrame);
+        mainFrame.getContentPane().add(gameView, "GameView");
+
+        // GameView 화면으로 전환
+        CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
+        cardLayout.show(mainFrame.getContentPane(), "GameView");
+    }
+
+    private void showShopView() {
+    	initializeGameAndShopViews(); // 필요할 때 초기화
+        if (player == null) {
+            JOptionPane.showMessageDialog(this, "플레이어 정보가 없습니다. 다시 로그인해주세요.", "오류", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // ShopView가 추가되어 있는지 확인
+        for (Component component : mainFrame.getContentPane().getComponents()) {
+            if (component instanceof ShopView) {
+                // ShopView가 이미 추가되어 있으면 해당 화면으로 전환
+                CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
+                cardLayout.show(mainFrame.getContentPane(), "ShopView");
+                return;
+            }
+        }
+
+        // ShopView 생성 및 추가
+        ShopView shopView = new ShopView(player, userController, null, mainFrame);
+        mainFrame.getContentPane().add(shopView, "ShopView");
+
+        // ShopView 화면으로 전환
+        CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
+        cardLayout.show(mainFrame.getContentPane(), "ShopView");
+    }
+    private void showCharacterView() {
+        // Player 정보가 null일 경우 기본 Player 생성
+        if (player == null) {
+            JOptionPane.showMessageDialog(this, "플레이어 정보가 없습니다. 기본 캐릭터로 설정됩니다.", "알림", JOptionPane.INFORMATION_MESSAGE);
+            player = new Player(0, "Guest", 100); // ID: 0, 이름: "Guest", 초기 금액: 100으로 설정
+        }
+
+        // 이미 CharacterView가 추가되었는지 확인
+        for (Component component : mainFrame.getContentPane().getComponents()) {
+            if (component instanceof CharacterView) {
+                // CharacterView가 이미 추가되어 있으면 해당 화면으로 전환
+                CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
+                cardLayout.show(mainFrame.getContentPane(), "CharacterView");
+                return;
+            }
+        }
+
+        // CharacterView 생성 및 추가
         CharacterView characterView = new CharacterView(player, myCharacter, this);
         mainFrame.getContentPane().add(characterView, "CharacterView");
+
+        // CharacterView 화면으로 전환
         CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
         cardLayout.show(mainFrame.getContentPane(), "CharacterView");
     }
+
 
     public void setPlayer(Player player) {
         this.player = player;
@@ -118,6 +178,19 @@ public class HomeView extends JPanel {
         }
 
         rankingTextArea.setText(rankingText.toString());
+    }
+    public void initializeGameAndShopViews() {
+        if (gameView == null) {
+            gameView = new GameView(player.getName(), userController, player, mainFrame);
+            mainFrame.getContentPane().add(gameView, "GameView");
+            System.out.println("GameView 초기화 완료");
+        }
+
+        if (shopView == null) {
+            shopView = new ShopView(player, userController, gameView, mainFrame);
+            mainFrame.getContentPane().add(shopView, "ShopView");
+            System.out.println("ShopView 초기화 완료");
+        }
     }
 
 

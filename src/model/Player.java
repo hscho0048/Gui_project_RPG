@@ -99,6 +99,10 @@ public class Player {
         return characterName;
     }
 
+    public void setCharacterImage(ImageIcon characterImage) {
+        this.characterImage = characterImage;
+    }
+
     // 캐릭터 이름 Setter
     public void setCharacterName(String characterName) {
         this.characterName = characterName;

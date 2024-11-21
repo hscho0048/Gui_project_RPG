@@ -61,6 +61,13 @@ public class ShopView extends JPanel {
         buttonPanel.add(backButton);
 
         add(buttonPanel, BorderLayout.SOUTH);
+     // 전체 레이아웃 초기화
+        setLayout(new BorderLayout());
+        
+
+        // UI 초기화 메서드 호출
+        initializeUI();
+        
     }
 
     private JButton createItemButton(Item item) {
@@ -100,7 +107,7 @@ public class ShopView extends JPanel {
 
         return itemButton;
     }
-
+    
     private void handleBuyItem() {
         Item selectedItem = (Item) itemPanel.getClientProperty("selectedItem");
         if (selectedItem != null) {
@@ -109,24 +116,62 @@ public class ShopView extends JPanel {
                 player.setMoney(player.getMoney() - selectedItem.getPrice()); // 금액 차감
 
                 // GameView에 아이템 추가
-                gameView.addItemToInventory(selectedItem); // 필드 gameView를 사용
+                if (gameView != null) {
+                    gameView.addItemToInventory(selectedItem); // 필드 gameView를 사용
+                } else {
+                    System.err.println("GameView가 초기화되지 않았습니다.");
+                }
 
                 updatePlayerInfo(); // 플레이어 정보 갱신
             } else {
-                UIUtils.indicateError(buyButton); // 돈이 부족한 경우
+                JOptionPane.showMessageDialog(this, "돈이 부족합니다.", "오류", JOptionPane.ERROR_MESSAGE);
             }
         } else {
-            UIUtils.indicateError(buyButton); // 아이템이 선택되지 않았을 때
+            JOptionPane.showMessageDialog(this, "아이템을 선택해주세요.", "오류", JOptionPane.ERROR_MESSAGE);
         }
     }
-
-
 
     private void updatePlayerInfo() {
         playerInfoLabel.setText("플레이어: " + player.getName() + " | 금액: " + player.getMoney());
         revalidate();
         repaint();
     }
+    private void initializeUI() {
+        Font font = new Font("Default", Font.BOLD, 15);
+
+        // 플레이어 정보
+        playerInfoLabel = new JLabel("플레이어: " + player.getName() + " | 금액: " + player.getMoney());
+        playerInfoLabel.setFont(font);
+        add(playerInfoLabel, BorderLayout.NORTH);
+
+        // 아이템 패널
+        itemPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+        itemPanel.setOpaque(false);
+        List<Item> items = shop.getItem();
+        if (items != null && !items.isEmpty()) {
+            for (Item item : items) {
+                JButton itemButton = createItemButton(item);
+                itemPanel.add(itemButton);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "상점에 아이템이 없습니다.", "오류", JOptionPane.ERROR_MESSAGE);
+        }
+        add(new JScrollPane(itemPanel), BorderLayout.CENTER);
+
+        // 버튼 패널
+        buyButton = new JButton("구매");
+        buyButton.addActionListener(e -> handleBuyItem());
+
+        backButton = new JButton("홈으로");
+        backButton.addActionListener(e -> handleBack());
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.add(buyButton);
+        buttonPanel.add(backButton);
+
+        add(buttonPanel, BorderLayout.SOUTH);
+    }
+
 
     private void handleBack() {
         CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();

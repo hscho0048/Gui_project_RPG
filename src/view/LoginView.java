@@ -3,6 +3,7 @@ package view;
 import javax.swing.*;
 import java.awt.*;
 import controller.UserController;
+import model.MyCharacter;
 import model.Player;
 import util.UIUtils;
 
@@ -63,22 +64,22 @@ public class LoginView extends JPanel {
         }
 
         if (userController.authenticate(username, password)) {
-            // 로그인 성공 시 플레이어 정보 가져오기
-            Player player = userController.getPlayerInfo(username);
+            // 로그인 성공 시 초기화 작업 수행
+            Player player = userController.getPlayerInfo(username); // 플레이어 정보 가져오기
             if (player == null) {
                 JOptionPane.showMessageDialog(this, "플레이어 정보를 가져오는 데 실패했습니다.", "오류", JOptionPane.ERROR_MESSAGE);
                 return;
             }
+            // MyCharacter 초기화
+            MyCharacter globalMyCharacter = new MyCharacter();
 
-            // GameView 및 ShopView를 Player로 초기화
-            GameView gameView = new GameView(username, userController, player, mainFrame);
-            ShopView shopView = new ShopView(player, userController, gameView, mainFrame);
+            // HomeView 초기화
+            HomeView homeView = new HomeView(userController, mainFrame, globalMyCharacter, player);
+            mainFrame.getContentPane().add(homeView, "HomeView");
 
-            // GameView와 ShopView를 메인 프레임에 추가
-            mainFrame.getContentPane().add(gameView, "GameView");
-            mainFrame.getContentPane().add(shopView, "ShopView");
+  
 
-            // 홈 화면으로 이동
+            // HomeView로 이동
             CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
             cardLayout.show(mainFrame.getContentPane(), "HomeView");
         } else {

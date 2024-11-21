@@ -323,6 +323,7 @@ public class GameView extends JPanel {
 
     private void updatePlayerInfo() {
         playerInfoLabel.setText("플레이어: " + player.getName());
+        playerImageLabel.setIcon(player.getCharacterImage()); // 캐릭터 이미지 업데이트
         setupHealthBar(playerHealthBar, player.getHealth(), player.getMaxHealth());
     }
 
