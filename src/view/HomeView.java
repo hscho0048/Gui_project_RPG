@@ -1,6 +1,8 @@
 package view;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
 import java.awt.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,6 +17,8 @@ public class HomeView extends JPanel {
     private JFrame mainFrame;
     private MyCharacter myCharacter; // MyCharacter 객체
     private Player player;
+    private JTable rankingTable;
+
     
     private GameView gameView;
     private ShopView shopView;
@@ -27,6 +31,8 @@ public class HomeView extends JPanel {
         
 
         setLayout(new BorderLayout()); // 전체 레이아웃 설정
+        
+        initializeRankingTableAndButtons();
 
         // 버튼 패널
         JPanel buttonPanel = new JPanel(new GridLayout(3, 1)); // 세로로 버튼 배치
@@ -41,19 +47,20 @@ public class HomeView extends JPanel {
         buttonPanel.add(shopButton);
         buttonPanel.add(characterSelectButton);
 
-        // 랭킹 패널
+     // 랭킹 패널
         JPanel rankingPanel = new JPanel();
         rankingPanel.setLayout(new BorderLayout());
         rankingPanel.setBorder(BorderFactory.createTitledBorder("랭킹"));
 
-        rankingTextArea = new JTextArea();
-        rankingTextArea.setEditable(false); // 사용자 입력 비활성화
-        JScrollPane scrollPane = new JScrollPane(rankingTextArea); // 스크롤 가능하도록 설정
-        rankingPanel.add(scrollPane, BorderLayout.CENTER);
+        // JTable 생성
+        String[] columnNames = {"순위", "플레이어", "캐릭터", "점수"};
+        DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0); // 빈 테이블 초기화
+        rankingTable = new JTable(tableModel);
+        rankingTable.setEnabled(false); // 사용자 편집 비활성화
 
-        // 버튼과 랭킹을 나란히 배치
-        add(buttonPanel, BorderLayout.WEST);
-        add(rankingPanel, BorderLayout.CENTER);
+        // 스크롤 가능하도록 설정
+        JScrollPane scrollPane = new JScrollPane(rankingTable);
+        rankingPanel.add(scrollPane, BorderLayout.CENTER);
 
         // 초기 랭킹 로드
         updateRanking();
@@ -142,14 +149,13 @@ public class HomeView extends JPanel {
     }
 
     public void updateRanking() {
-        StringBuilder rankingText = new StringBuilder();
-        rankingText.append("순위\t플레이어\t캐릭터\t구매 아이템\t턴수\n");
-        rankingText.append("--------------------------------------------------\n");
+        // 기존 JTable 모델 가져오기
+        DefaultTableModel tableModel = (DefaultTableModel) rankingTable.getModel();
+        tableModel.setRowCount(0); // 기존 데이터 초기화
 
         ResultSet rs = userController.getRanking();
         if (rs == null) {
-            rankingText.append("랭킹 데이터를 불러오는 중 오류가 발생했습니다.\n");
-            rankingTextArea.setText(rankingText.toString());
+            JOptionPane.showMessageDialog(this, "랭킹 데이터를 불러오는 중 오류가 발생했습니다.", "오류", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -159,26 +165,66 @@ public class HomeView extends JPanel {
                 hasData = true;
                 int rank = rs.getInt("rank");
                 String player = rs.getString("player");
-                String character = rs.getString("character"); // 'UNKNOWN' 값 가져오기
+                String character = rs.getString("character") != null ? rs.getString("character") : "UNKNOWN"; // 'UNKNOWN' 기본값 처리
                 String items = rs.getString("items") != null ? rs.getString("items") : "없음";
                 int turns = rs.getInt("turns");
 
-                rankingText.append(rank).append("\t")
-                           .append(player).append("\t")
-                           .append(character).append("\t")
-                           .append(items).append("\t")
-                           .append(turns).append("\n");
+                // 데이터 추가
+                tableModel.addRow(new Object[]{rank, player, character, items, turns});
             }
 
             if (!hasData) {
-                rankingText.append("아직 플레이한 사용자가 없습니다.\n");
+                JOptionPane.showMessageDialog(this, "아직 플레이한 사용자가 없습니다.", "알림", JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (SQLException e) {
-            rankingText.append("랭킹 데이터를 처리하는 중 오류 발생: ").append(e.getMessage());
+            JOptionPane.showMessageDialog(this, "랭킹 데이터를 처리하는 중 오류 발생: " + e.getMessage(), "오류", JOptionPane.ERROR_MESSAGE);
         }
-
-        rankingTextArea.setText(rankingText.toString());
     }
+    private void initializeRankingTableAndButtons() {
+        // 버튼 패널 초기화
+        JPanel buttonPanel = new JPanel(new GridLayout(3, 1)); // 세로로 버튼 배치
+        battleButton = new JButton("대결");
+        battleButton.addActionListener(e -> showGameView());
+        shopButton = new JButton("상점");
+        shopButton.addActionListener(e -> showShopView());
+        characterSelectButton = new JButton("캐릭터 선택");
+        characterSelectButton.addActionListener(e -> showCharacterView());
+        buttonPanel.add(battleButton);
+        buttonPanel.add(shopButton);
+        buttonPanel.add(characterSelectButton);
+
+        // 테이블 열 제목
+        String[] columnNames = {"순위", "플레이어", "캐릭터", "구매 아이템", "턴수"};
+
+        // DefaultTableModel 초기화
+        DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0);
+
+        // JTable 생성
+        rankingTable = new JTable(tableModel);
+        rankingTable.setEnabled(false); // 사용자 입력 비활성화
+        rankingTable.getTableHeader().setReorderingAllowed(false); // 열 이동 비활성화
+        rankingTable.getTableHeader().setResizingAllowed(false); // 열 크기 변경 비활성화
+
+        // JScrollPane 생성 및 테이블 추가
+        JScrollPane scrollPane = new JScrollPane(rankingTable);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS); // 수직 스크롤 활성화
+
+        // 랭킹 패널 생성
+        JPanel rankingPanel = new JPanel(new BorderLayout());
+        rankingPanel.setBorder(BorderFactory.createTitledBorder("랭킹"));
+        rankingPanel.add(scrollPane, BorderLayout.CENTER);
+
+        // 전체 레이아웃 패널
+        JPanel combinedPanel = new JPanel(new BorderLayout());
+        combinedPanel.add(buttonPanel, BorderLayout.WEST); // 버튼은 왼쪽
+        combinedPanel.add(rankingPanel, BorderLayout.CENTER); // 랭킹 테이블은 오른쪽
+
+        // HomeView에 추가
+        add(combinedPanel, BorderLayout.CENTER);
+    }
+
+
+
     public void initializeGameAndShopViews() {
         if (gameView == null) {
             gameView = new GameView(player.getName(), userController, player, mainFrame);
