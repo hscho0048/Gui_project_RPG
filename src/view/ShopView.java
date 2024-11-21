@@ -21,8 +21,10 @@ public class ShopView extends JPanel {
     private Shop shop;
     private JFrame mainFrame; // CardLayout 관리용 프레임
     private GameView gameView;
+    private HomeView homeView;
 
-    public ShopView(Player player, UserController userController, GameView gameView, JFrame mainFrame) {
+    public ShopView(Player player, UserController userController, GameView gameView, JFrame mainFrame, HomeView homeView) {
+        this.homeView = homeView; 
         this.player = player;
         this.userController = userController;
         this.gameView = gameView; // GameView 초기화
@@ -109,20 +111,36 @@ public class ShopView extends JPanel {
     }
     
     private void handleBuyItem() {
+        // 선택된 아이템을 가져옵니다.
         Item selectedItem = (Item) itemPanel.getClientProperty("selectedItem");
+
         if (selectedItem != null) {
+            // 플레이어가 아이템을 구매할 수 있는지 확인
             if (player.getMoney() >= selectedItem.getPrice()) {
-                player.buyItem(selectedItem); // 플레이어가 아이템 구매
-                player.setMoney(player.getMoney() - selectedItem.getPrice()); // 금액 차감
+                // 아이템 구매 처리
+                player.buyItem(selectedItem);  // 플레이어가 아이템을 구매
+                player.setMoney(player.getMoney() - selectedItem.getPrice());  // 금액 차감
+
+                // 아이템 구매 기록을 purchases 테이블에 저장
+                userController.recordPurchase(player.getUserId(), selectedItem.getName());  // 구매 기록 저장
+
+                // items 컬럼을 업데이트 (users 테이블)
+                if (userController.updateItem(player.getName(), selectedItem.getName())) {
+                    // 아이템 구매 성공 시, 랭킹 갱신
+                    homeView.updateRanking();  // 랭킹 테이블 갱신
+                } else {
+                    System.out.println("아이템을 데이터베이스에 업데이트하는 데 실패했습니다.");
+                }
 
                 // GameView에 아이템 추가
                 if (gameView != null) {
-                    gameView.addItemToInventory(selectedItem); // 필드 gameView를 사용
+                    gameView.addItemToInventory(selectedItem); // 필드 gameView를 사용하여 아이템 추가
                 } else {
                     System.err.println("GameView가 초기화되지 않았습니다.");
                 }
 
-                updatePlayerInfo(); // 플레이어 정보 갱신
+                updatePlayerInfo();  // 플레이어 정보 갱신
+                JOptionPane.showMessageDialog(this, selectedItem.getName() + "를 구매했습니다!");
             } else {
                 JOptionPane.showMessageDialog(this, "돈이 부족합니다.", "오류", JOptionPane.ERROR_MESSAGE);
             }
@@ -130,6 +148,7 @@ public class ShopView extends JPanel {
             JOptionPane.showMessageDialog(this, "아이템을 선택해주세요.", "오류", JOptionPane.ERROR_MESSAGE);
         }
     }
+
 
     private void updatePlayerInfo() {
         playerInfoLabel.setText("플레이어: " + player.getName() + " | 금액: " + player.getMoney());

@@ -39,7 +39,7 @@ public class RPGGameApp {
                 // HomeView, GameView, ShopView 추가
                 HomeView homeView = new HomeView(userController, mainFrame, globalMyCharacter, player);
                 GameView gameView = new GameView(player.getName(), userController, player, mainFrame);
-                ShopView shopView = new ShopView(player, userController, gameView, mainFrame);
+                ShopView shopView = new ShopView(player, userController, gameView, mainFrame, homeView); // homeView 전달
 
                 // 화면에 View 추가
                 mainFrame.getContentPane().add(homeView, "HomeView");

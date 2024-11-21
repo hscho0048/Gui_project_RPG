@@ -12,14 +12,13 @@ import model.Player;
 
 public class HomeView extends JPanel {
     private JButton battleButton, shopButton, characterSelectButton;
-    private JTextArea rankingTextArea; // 랭킹 정보를 표시할 텍스트 영역
+    private JTextArea rankingTextArea;
     private UserController userController;
     private JFrame mainFrame;
-    private MyCharacter myCharacter; // MyCharacter 객체
+    private MyCharacter myCharacter;
     private Player player;
     private JTable rankingTable;
 
-    
     private GameView gameView;
     private ShopView shopView;
 
@@ -28,10 +27,8 @@ public class HomeView extends JPanel {
         this.mainFrame = mainFrame;
         this.myCharacter = myCharacter;
         this.player = player;
-        
 
         setLayout(new BorderLayout()); // 전체 레이아웃 설정
-        
         initializeRankingTableAndButtons();
 
         // 버튼 패널
@@ -47,16 +44,16 @@ public class HomeView extends JPanel {
         buttonPanel.add(shopButton);
         buttonPanel.add(characterSelectButton);
 
-     // 랭킹 패널
+        // 랭킹 패널
         JPanel rankingPanel = new JPanel();
         rankingPanel.setLayout(new BorderLayout());
         rankingPanel.setBorder(BorderFactory.createTitledBorder("랭킹"));
 
         // JTable 생성
-        String[] columnNames = {"순위", "플레이어", "캐릭터", "점수"};
-        DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0); // 빈 테이블 초기화
+        String[] columnNames = {"순위", "플레이어", "캐릭터", "구매 아이템", "턴수", "완료한 스테이지"};
+        DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0);
         rankingTable = new JTable(tableModel);
-        rankingTable.setEnabled(false); // 사용자 편집 비활성화
+        rankingTable.setEnabled(false);
 
         // 스크롤 가능하도록 설정
         JScrollPane scrollPane = new JScrollPane(rankingTable);
@@ -92,7 +89,7 @@ public class HomeView extends JPanel {
     }
 
     private void showShopView() {
-    	initializeGameAndShopViews(); // 필요할 때 초기화
+        initializeGameAndShopViews(); // 필요할 때 초기화
         if (player == null) {
             JOptionPane.showMessageDialog(this, "플레이어 정보가 없습니다. 다시 로그인해주세요.", "오류", JOptionPane.ERROR_MESSAGE);
             return;
@@ -109,51 +106,73 @@ public class HomeView extends JPanel {
         }
 
         // ShopView 생성 및 추가
-        ShopView shopView = new ShopView(player, userController, null, mainFrame);
+        ShopView shopView = new ShopView(player, userController, gameView, mainFrame, this);  // homeView 전달
         mainFrame.getContentPane().add(shopView, "ShopView");
 
         // ShopView 화면으로 전환
         CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
         cardLayout.show(mainFrame.getContentPane(), "ShopView");
     }
+
     private void showCharacterView() {
-        // Player 정보가 null일 경우 기본 Player 생성
         if (player == null) {
             JOptionPane.showMessageDialog(this, "플레이어 정보가 없습니다. 기본 캐릭터로 설정됩니다.", "알림", JOptionPane.INFORMATION_MESSAGE);
-            player = new Player(0, "Guest", 100); // ID: 0, 이름: "Guest", 초기 금액: 100으로 설정
+            player = new Player(0, "Guest", 100);
         }
 
-        // 이미 CharacterView가 추가되었는지 확인
         for (Component component : mainFrame.getContentPane().getComponents()) {
             if (component instanceof CharacterView) {
-                // CharacterView가 이미 추가되어 있으면 해당 화면으로 전환
                 CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
                 cardLayout.show(mainFrame.getContentPane(), "CharacterView");
                 return;
             }
         }
 
-        // CharacterView 생성 및 추가
         CharacterView characterView = new CharacterView(player, myCharacter, this);
         mainFrame.getContentPane().add(characterView, "CharacterView");
 
-        // CharacterView 화면으로 전환
         CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
         cardLayout.show(mainFrame.getContentPane(), "CharacterView");
     }
 
+    // TurnCount 업데이트 메서드
+    public void updateTurnCount(int turnCount) {
+        DefaultTableModel tableModel = (DefaultTableModel) rankingTable.getModel();
+        int rowCount = tableModel.getRowCount();
 
-    public void setPlayer(Player player) {
-        this.player = player;
-        System.out.println("플레이어 정보가 설정되었습니다: " + player.getName());
+        // 랭킹 테이블에서 플레이어의 턴수를 업데이트
+        for (int i = 0; i < rowCount; i++) {
+            String playerName = (String) tableModel.getValueAt(i, 1);
+            if (playerName.equals(player.getName())) {
+                tableModel.setValueAt(turnCount, i, 4); // 4번 열: 턴수
+                break;
+            }
+        }
+
+        // 랭킹 업데이트
+        updateRanking();
+    }
+
+    private void initializeGameAndShopViews() {
+        if (gameView == null) {
+        	GameView gameView = new GameView(player.getName(), userController, player, mainFrame);
+            mainFrame.getContentPane().add(gameView, "GameView");
+            System.out.println("GameView 초기화 완료");
+        }
+
+        if (shopView == null) {
+            shopView = new ShopView(player, userController, gameView, mainFrame, this);
+            mainFrame.getContentPane().add(shopView, "ShopView");
+            System.out.println("ShopView 초기화 완료");
+        }
     }
 
     public void updateRanking() {
         // 기존 JTable 모델 가져오기
         DefaultTableModel tableModel = (DefaultTableModel) rankingTable.getModel();
-        tableModel.setRowCount(0); // 기존 데이터 초기화
+        tableModel.setRowCount(0);
 
-        ResultSet rs = userController.getRanking(); // userController에서 랭킹 데이터 가져오기
+        ResultSet rs = userController.getRanking();
         if (rs == null) {
             JOptionPane.showMessageDialog(this, "랭킹 데이터를 불러오는 중 오류가 발생했습니다.", "오류", JOptionPane.ERROR_MESSAGE);
             return;
@@ -163,14 +182,13 @@ public class HomeView extends JPanel {
             boolean hasData = false;
             while (rs.next()) {
                 hasData = true;
-                int rank = rs.getInt("rank");  // 순위
-                String player = rs.getString("player");  // 플레이어 이름
-                String character = rs.getString("character") != null ? rs.getString("character") : "UNKNOWN"; 
+                int rank = rs.getInt("rank");
+                String player = rs.getString("player");
+                String character = rs.getString("character") != null ? rs.getString("character") : "UNKNOWN";
                 String items = rs.getString("items") != null ? rs.getString("items") : "없음";
-                int turns = rs.getInt("turns");  // 턴수
-                int stage = rs.getInt("stage");  // 완료한 스테이지
+                int turns = rs.getInt("turns");
+                int stage = rs.getInt("stage");
 
-                // 데이터 추가
                 tableModel.addRow(new Object[]{rank, player, character, items, turns, stage});
             }
 
@@ -182,29 +200,9 @@ public class HomeView extends JPanel {
         }
     }
 
-    
-    // 턴수 업데이트 메서드
-    public void updateTurnCount(int turnCount) {
-        DefaultTableModel tableModel = (DefaultTableModel) rankingTable.getModel();
-        int rowCount = tableModel.getRowCount();
-
-        // 랭킹 테이블에서 플레이어의 턴수를 업데이트 (예: 플레이어 이름이 1번 열에 있다고 가정)
-        for (int i = 0; i < rowCount; i++) {
-            String playerName = (String) tableModel.getValueAt(i, 1);  // 1번 열: 플레이어 이름
-            if (playerName.equals(player.getName())) {
-                tableModel.setValueAt(turnCount, i, 4);  // 4번 열: 턴수
-                break;
-            }
-        }
-
-        // 랭킹 업데이트
-        updateRanking();
-    }
-
-
     private void initializeRankingTableAndButtons() {
         // 버튼 패널 초기화
-        JPanel buttonPanel = new JPanel(new GridLayout(3, 1)); // 세로로 버튼 배치
+        JPanel buttonPanel = new JPanel(new GridLayout(3, 1));
         battleButton = new JButton("대결");
         battleButton.addActionListener(e -> showGameView());
         shopButton = new JButton("상점");
@@ -217,52 +215,25 @@ public class HomeView extends JPanel {
 
         // 테이블 열 제목
         String[] columnNames = {"순위", "플레이어", "캐릭터", "구매 아이템", "턴수", "완료한 스테이지"};
-
-        // DefaultTableModel 초기화
         DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0);
 
-        // JTable 생성
         rankingTable = new JTable(tableModel);
-        rankingTable.setEnabled(false); // 사용자 입력 비활성화
-        rankingTable.getTableHeader().setReorderingAllowed(false); // 열 이동 비활성화
-        rankingTable.getTableHeader().setResizingAllowed(false); // 열 크기 변경 비활성화
+        rankingTable.setEnabled(false);
+        rankingTable.getTableHeader().setReorderingAllowed(false);
+        rankingTable.getTableHeader().setResizingAllowed(false);
 
-        // JScrollPane 생성 및 테이블 추가
         JScrollPane scrollPane = new JScrollPane(rankingTable);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS); // 수직 스크롤 활성화
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
-        // 랭킹 패널 생성
         JPanel rankingPanel = new JPanel(new BorderLayout());
         rankingPanel.setBorder(BorderFactory.createTitledBorder("랭킹"));
         rankingPanel.add(scrollPane, BorderLayout.CENTER);
 
-        // 전체 레이아웃 패널
         JPanel combinedPanel = new JPanel(new BorderLayout());
-        combinedPanel.add(buttonPanel, BorderLayout.WEST); // 버튼은 왼쪽
-        combinedPanel.add(rankingPanel, BorderLayout.CENTER); // 랭킹 테이블은 오른쪽
+        combinedPanel.add(buttonPanel, BorderLayout.WEST);
+        combinedPanel.add(rankingPanel, BorderLayout.CENTER);
 
-        // HomeView에 추가
         add(combinedPanel, BorderLayout.CENTER);
-
-        // 랭킹 데이터 갱신
         updateRanking();
     }
-
-
-    public void initializeGameAndShopViews() {
-        if (gameView == null) {
-            gameView = new GameView(player.getName(), userController, player, mainFrame);
-            mainFrame.getContentPane().add(gameView, "GameView");
-            System.out.println("GameView 초기화 완료");
-        }
-
-        if (shopView == null) {
-            shopView = new ShopView(player, userController, gameView, mainFrame);
-            mainFrame.getContentPane().add(shopView, "ShopView");
-            System.out.println("ShopView 초기화 완료");
-        }
-    }
-
-
 }
-

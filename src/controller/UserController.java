@@ -189,59 +189,63 @@ public class UserController {
 	    }
 	}
 	// 랭킹 업데이트 메서드
-    public void updateRanking(DefaultTableModel tableModel) {
-        // 기존 테이블 모델 초기화
-        tableModel.setRowCount(0); // 기존 데이터 초기화
+	public void updateRanking(DefaultTableModel tableModel) {
+	    // 기존 데이터 초기화
+	    tableModel.setRowCount(0);
 
-        // 랭킹 데이터를 DB에서 가져오는 쿼리
-        String rankingQuery = "SELECT (@rank := @rank + 1) AS `rank`, " +
-                              "u.username AS player, " +
-                              "`character_name` AS 'character', " + 
-                              "IFNULL(u.items, '없음') AS 'items', " + 
-                              "u.turns AS turns, " +  // 턴수
-                              "us.stage AS stage " +  // 완료한 스테이지
-                              "FROM users u " +
-                              "LEFT JOIN user_stage us ON u.username = us.username " +
-                              "ORDER BY u.turns DESC, us.stage DESC;";  // 턴수와 스테이지에 따라 정렬
+	    String rankingQuery = "SELECT (@rank := @rank + 1) AS `rank`, " +
+	                          "u.username AS player, " +
+	                          "`character_name` AS 'character', " + 
+	                          "IFNULL(u.items, '없음') AS 'items', " +  // 아이템 정보 추가
+	                          "u.turns AS turns, " + 
+	                          "us.stage AS stage " + 
+	                          "FROM users u " +
+	                          "LEFT JOIN user_stage us ON u.username = us.username " +
+	                          "ORDER BY u.turns DESC, us.stage DESC;";
 
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(rankingQuery)) {
+	    try (Statement stmt = connection.createStatement();
+	         ResultSet rs = stmt.executeQuery(rankingQuery)) {
 
-            boolean hasData = false;
-            while (rs.next()) {
-                hasData = true;
-                int rank = rs.getInt("rank");
-                String player = rs.getString("player");
-                String character = rs.getString("character") != null ? rs.getString("character") : "UNKNOWN"; 
-                String items = rs.getString("items") != null ? rs.getString("items") : "없음";
-                int turns = rs.getInt("turns");
-                int stage = rs.getInt("stage");
+	        boolean hasData = false;
+	        while (rs.next()) {
+	            hasData = true;
+	            int rank = rs.getInt("rank");
+	            String player = rs.getString("player");
+	            String character = rs.getString("character") != null ? rs.getString("character") : "UNKNOWN"; 
+	            String items = rs.getString("items") != null ? rs.getString("items") : "없음";
+	            int turns = rs.getInt("turns");
+	            int stage = rs.getInt("stage");
 
-                // 데이터 추가
-                tableModel.addRow(new Object[]{rank, player, character, items, turns, stage});
-            }
+	            // 데이터 추가
+	            tableModel.addRow(new Object[]{rank, player, character, items, turns, stage});
+	        }
 
-            if (!hasData) {
-                System.out.println("아직 플레이한 사용자가 없습니다.");
-            }
-        } catch (SQLException e) {
-            System.err.println("랭킹 데이터를 처리하는 중 오류 발생: " + e.getMessage());
-        }
-    }
-
-
-
+	        if (!hasData) {
+	            System.out.println("아직 플레이한 사용자가 없습니다.");
+	        }
+	    } catch (SQLException e) {
+	        System.err.println("랭킹 데이터를 처리하는 중 오류 발생: " + e.getMessage());
+	    }
+	}
+	
 	public void recordPurchase(int userId, String itemName) {
 	    String query = "INSERT INTO purchases (user_id, item_name) VALUES (?, ?)";
 	    try (PreparedStatement stmt = connection.prepareStatement(query)) {
 	        stmt.setInt(1, userId);        // 사용자 ID
 	        stmt.setString(2, itemName);  // 아이템 이름
-	        stmt.executeUpdate();
-	        System.out.println("아이템 구매 기록이 저장되었습니다: " + itemName);
+
+	        int rowsInserted = stmt.executeUpdate();
+	        
+	        if (rowsInserted > 0) {
+	            System.out.println("아이템 구매 기록이 저장되었습니다: " + itemName);
+	        } else {
+	            System.out.println("아이템 구매 기록 저장 실패.");
+	        }
 	    } catch (SQLException e) {
 	        System.out.println("아이템 구매 기록 저장 실패: " + e.getMessage());
 	    }
 	}
+
 	public Player getPlayerInfo(String userId) {
 	    String query = "SELECT id, username, money FROM users WHERE username = ?";
 	    try (PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -258,22 +262,25 @@ public class UserController {
 	    }
 	    return null;
 	}
-	public void updatePlayerItems(String username, String updatedItems) {
+	public boolean updateItem(String username, String itemName) {
 	    String query = "UPDATE users SET items = ? WHERE username = ?";
 	    try (PreparedStatement stmt = connection.prepareStatement(query)) {
-	        stmt.setString(1, updatedItems); // 아이템 이름을 쉼표로 구분하여 저장
-	        stmt.setString(2, username);
-	        stmt.executeUpdate();
+	        stmt.setString(1, itemName);  // 아이템 이름 설정
+	        stmt.setString(2, username);  // 사용자 이름 설정
+
+	        int rowsAffected = stmt.executeUpdate();
+	        
+	        if (rowsAffected > 0) {
+	            System.out.println(username + "의 아이템이 " + itemName + "으로 업데이트되었습니다.");
+	            return true;
+	        } else {
+	            System.out.println("사용자 " + username + "이(가) 존재하지 않거나 아이템 업데이트가 이루어지지 않았습니다.");
+	            return false;
+	        }
 	    } catch (SQLException e) {
-	        System.err.println("아이템을 업데이트하는 데 실패했습니다: " + e.getMessage());
+	        System.out.println("아이템 업데이트 실패: " + e.getMessage());
+	        return false;
 	    }
 	}
-	
-	public Connection getConnection() {
-        return connection;
-    }
-	
-
-
 
 }
