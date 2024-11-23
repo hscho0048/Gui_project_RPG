@@ -75,7 +75,7 @@ public class HomeView extends JPanel {
 	    rankingPanel.add(scrollPane, BorderLayout.CENTER);
 
 	    // 전체 레이아웃에 패널 추가
-	    add(buttonPanel, BorderLayout.EAST); // 버튼 패널을 오른쪽에 추가
+	    add(buttonPanel, BorderLayout.WEST);
 	    add(rankingPanel, BorderLayout.CENTER); // 랭킹 패널을 중앙에 추가
 
 	    // 초기 랭킹 로드
