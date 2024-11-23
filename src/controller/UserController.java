@@ -21,7 +21,7 @@ public class UserController {
 		try {
 			String url = "jdbc:mysql://localhost:3306/RPGGame";
 			String user = "root";
-			String password = "1111"; // 자신의 데이터베이스 비밀번호로 수정
+			String password = "kkero0418"; // 자신의 데이터베이스 비밀번호로 수정
 			connection = DriverManager.getConnection(url, user, password);
 			System.out.println("데이터베이스에 연결되었습니다.");
 		} catch (SQLException e) {
@@ -313,25 +313,54 @@ public class UserController {
         }
         return null; // 유저가 없으면 null 반환
     }
-	public boolean updateItem(String username, String itemName) {
-	    String query = "UPDATE users SET items = ? WHERE username = ?";
-	    try (PreparedStatement stmt = connection.prepareStatement(query)) {
-	        stmt.setString(1, itemName);  // 아이템 이름 설정
-	        stmt.setString(2, username);  // 사용자 이름 설정
+    public boolean updateItem(int userId, String itemName) {
+        String userCheckQuery = "SELECT COUNT(*) FROM users WHERE id = ?";
+        String updateQuery = "UPDATE users SET items = ? WHERE id = ?";
+        
+        try (PreparedStatement userCheckStmt = connection.prepareStatement(userCheckQuery);
+             PreparedStatement updateStmt = connection.prepareStatement(updateQuery)) {
+            
+            // 1. 사용자 존재 여부 확인
+            userCheckStmt.setInt(1, userId);
+            ResultSet rs = userCheckStmt.executeQuery();
+            if (rs.next()) {
+                int userCount = rs.getInt(1); // 사용자 수 가져오기
+                if (userCount == 0) {
+                    System.err.println("사용자 ID " + userId + "가 존재하지 않습니다.");
+                    return false; // 사용자 없음
+                }
+            }
 
-	        int rowsAffected = stmt.executeUpdate();
-	        
-	        if (rowsAffected > 0) {
-	            System.out.println(username + "의 아이템이 " + itemName + "으로 업데이트되었습니다.");
-	            return true;
-	        } else {
-	            System.out.println("사용자 " + username + "이(가) 존재하지 않거나 아이템 업데이트가 이루어지지 않았습니다.");
-	            return false;
-	        }
-	    } catch (SQLException e) {
-	        System.out.println("아이템 업데이트 실패: " + e.getMessage());
-	        return false;
-	    }
-	}
+            // 2. 업데이트 실행
+            updateStmt.setString(1, itemName); // 업데이트할 아이템 설정
+            updateStmt.setInt(2, userId);      // 업데이트할 사용자 ID 설정
+            int rowsAffected = updateStmt.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                System.out.println("사용자 ID " + userId + "의 아이템이 " + itemName + "으로 업데이트되었습니다.");
+                return true; // 업데이트 성공
+            } else {
+                System.err.println("사용자 ID " + userId + "가 존재하지만 업데이트가 실패했습니다.");
+                return false; // 업데이트 실패
+            }
+        } catch (SQLException e) {
+            System.err.println("아이템 업데이트 실패: " + e.getMessage());
+            return false;
+        }
+    }
+    public String getUserItems(int userId) {
+        String query = "SELECT items FROM users WHERE id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getString("items"); // items 데이터 반환
+            }
+        } catch (SQLException e) {
+            System.err.println("아이템 가져오기 실패: " + e.getMessage());
+        }
+        return null; // 실패 시 null 반환
+    }
+
 
 }
