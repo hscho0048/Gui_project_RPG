@@ -23,48 +23,65 @@ public class HomeView extends JPanel {
 	private ShopView shopView;
 
 	public HomeView(UserController userController, JFrame mainFrame, MyCharacter myCharacter, Player player) {
-		this.userController = userController;
-		this.mainFrame = mainFrame;
-		this.myCharacter = myCharacter;
-		this.player = player;
+	    this.userController = userController;
+	    this.mainFrame = mainFrame;
+	    this.myCharacter = myCharacter;
+	    this.player = player;
 
-		// 디버깅: HomeView에서 받은 userId 확인
-		System.out.println("디버깅: HomeView에서 받은 userId: " + player.getId());
+	    // 디버깅: HomeView에서 받은 userId 확인
+	    System.out.println("디버깅: HomeView에서 받은 userId: " + player.getId());
 
-		setLayout(new BorderLayout()); // 전체 레이아웃 설정
-		initializeRankingTableAndButtons();
+	    setLayout(new BorderLayout()); // 전체 레이아웃 설정
 
-		// 버튼 패널
-		JPanel buttonPanel = new JPanel(new GridLayout(3, 1)); // 세로로 버튼 배치
-		battleButton = new JButton("대결");
-		battleButton.addActionListener(e -> showGameView());
-		shopButton = new JButton("상점");
-		shopButton.addActionListener(e -> showShopView());
-		characterSelectButton = new JButton("캐릭터 선택");
-		characterSelectButton.addActionListener(e -> showCharacterView()); // 캐릭터 선택
+	    // 버튼 패널 초기화
+	    JPanel buttonPanel = new JPanel(new GridLayout(4, 1, 10, 10)); // 4개의 버튼과 간격 설정
+	    battleButton = new JButton("대결");
+	    battleButton.addActionListener(e -> showGameView());
 
-		buttonPanel.add(battleButton);
-		buttonPanel.add(shopButton);
-		buttonPanel.add(characterSelectButton);
+	    shopButton = new JButton("상점");
+	    shopButton.addActionListener(e -> showShopView());
 
-		// 랭킹 패널
-		JPanel rankingPanel = new JPanel();
-		rankingPanel.setLayout(new BorderLayout());
-		rankingPanel.setBorder(BorderFactory.createTitledBorder("랭킹"));
+	    characterSelectButton = new JButton("캐릭터 선택");
+	    characterSelectButton.addActionListener(e -> showCharacterView()); // 캐릭터 선택
 
-		// JTable 생성
-		String[] columnNames = { "순위", "플레이어", "캐릭터", "구매 아이템", "턴수", "완료한 스테이지" };
-		DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0);
-		rankingTable = new JTable(tableModel);
-		rankingTable.setEnabled(false);
+	    JButton refreshRankingButton = new JButton("랭킹 갱신");
+	    refreshRankingButton.addActionListener(e -> {
+	        updateRanking(); // 랭킹 갱신 호출
+	        JOptionPane.showMessageDialog(this, "랭킹이 갱신되었습니다!", "알림", JOptionPane.INFORMATION_MESSAGE);
+	    });
 
-		// 스크롤 가능하도록 설정
-		JScrollPane scrollPane = new JScrollPane(rankingTable);
-		rankingPanel.add(scrollPane, BorderLayout.CENTER);
+	    // 버튼 패널에 버튼 추가
+	    buttonPanel.add(battleButton);
+	    buttonPanel.add(shopButton);
+	    buttonPanel.add(characterSelectButton);
+	    buttonPanel.add(refreshRankingButton);
 
-		// 초기 랭킹 로드
-		updateRanking();
+	    // 랭킹 패널 초기화
+	    JPanel rankingPanel = new JPanel(new BorderLayout());
+	    rankingPanel.setBorder(BorderFactory.createTitledBorder("랭킹"));
+
+	    // JTable 생성
+	    String[] columnNames = { "순위", "플레이어", "캐릭터", "구매 아이템", "턴수", "완료한 스테이지" };
+	    DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0);
+	    rankingTable = new JTable(tableModel);
+	    rankingTable.setEnabled(false);
+
+	    // 스크롤 가능하도록 설정
+	    JScrollPane scrollPane = new JScrollPane(rankingTable);
+	    scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+	    scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+	    // 랭킹 패널에 스크롤 패널 추가
+	    rankingPanel.add(scrollPane, BorderLayout.CENTER);
+
+	    // 전체 레이아웃에 패널 추가
+	    add(buttonPanel, BorderLayout.EAST); // 버튼 패널을 오른쪽에 추가
+	    add(rankingPanel, BorderLayout.CENTER); // 랭킹 패널을 중앙에 추가
+
+	    // 초기 랭킹 로드
+	    updateRanking();
 	}
+
 
 	// 캐릭터 선택 후 업데이트
 	public boolean updateCharacter(String characterName) {
@@ -185,36 +202,62 @@ public class HomeView extends JPanel {
 	}
 
 	public void updateRanking() {
-		DefaultTableModel tableModel = (DefaultTableModel) rankingTable.getModel();
-		tableModel.setRowCount(0); // 테이블 초기화
+	    DefaultTableModel tableModel = (DefaultTableModel) rankingTable.getModel();
+	    tableModel.setRowCount(0); // 테이블 초기화
 
-		ResultSet rs = userController.getRanking();
-		if (rs == null) {
-			JOptionPane.showMessageDialog(this, "랭킹 데이터를 불러오는 중 오류가 발생했습니다.", "오류", JOptionPane.ERROR_MESSAGE);
-			return;
-		}
+	    ResultSet rs = userController.getRanking();
+	    if (rs == null) {
+	        JOptionPane.showMessageDialog(this, "랭킹 데이터를 불러오는 중 오류가 발생했습니다.", "오류", JOptionPane.ERROR_MESSAGE);
+	        return;
+	    }
 
-		try {
-			boolean hasData = false;
-			while (rs.next()) {
-				hasData = true;
-				int rank = rs.getInt("rank");
-				String playerName = rs.getString("player");
-				String character = rs.getString("character") != null ? rs.getString("character") : "UNKNOWN";
-				String items = rs.getString("items") != null ? rs.getString("items") : "없음";
-				int turns = rs.getInt("turns");
-				int stage = rs.getInt("stage");
+	    try {
+	        boolean hasData = false;
+	        while (rs.next()) {
+	            hasData = true;
 
-				tableModel.addRow(new Object[] { rank, playerName, character, items, turns, stage });
-			}
+	            // 데이터베이스에서 값 가져오기
+	            int rank = rs.getInt("rank");
+	            String playerName = rs.getString("player");
+	            String character = rs.getString("character") != null ? rs.getString("character") : "UNKNOWN";
 
-			if (!hasData) {
-				JOptionPane.showMessageDialog(this, "아직 플레이한 사용자가 없습니다.", "알림", JOptionPane.INFORMATION_MESSAGE);
-			}
-		} catch (SQLException e) {
-			JOptionPane.showMessageDialog(this, "랭킹 데이터를 처리하는 중 오류 발생: " + e.getMessage(), "오류",
-					JOptionPane.ERROR_MESSAGE);
-		}
+	            // items 필드에서 마지막 아이템만 추출
+	            String items = rs.getString("items");
+	            String lastItem = "없음"; // 기본값 설정
+	            if (items != null && !items.isEmpty()) {
+	                String[] itemArray = items.split(",");
+	                lastItem = itemArray[itemArray.length - 1].trim(); // 마지막 아이템 추출 및 트림 처리
+	            }
+
+	            int turns = rs.getInt("turns");
+	            int stage = rs.getInt("stage");
+
+	            // 디버깅: 데이터 확인
+	            System.out.println("랭킹 데이터 추가: " +
+	                    "순위=" + rank +
+	                    ", 플레이어=" + playerName +
+	                    ", 캐릭터=" + character +
+	                    ", 마지막 아이템=" + lastItem +
+	                    ", 턴수=" + turns +
+	                    ", 완료한 스테이지=" + stage);
+
+	            // 테이블에 데이터 추가
+	            tableModel.addRow(new Object[]{rank, playerName, character, lastItem, turns, stage});
+	        }
+
+	        if (!hasData) {
+	            JOptionPane.showMessageDialog(this, "아직 플레이한 사용자가 없습니다.", "알림", JOptionPane.INFORMATION_MESSAGE);
+	        }
+	    } catch (SQLException e) {
+	        JOptionPane.showMessageDialog(this, "랭킹 데이터를 처리하는 중 오류 발생: " + e.getMessage(), "오류",
+	                JOptionPane.ERROR_MESSAGE);
+	    } finally {
+	        try {
+	            rs.close(); // ResultSet 자원 해제
+	        } catch (SQLException e) {
+	            System.err.println("ResultSet 닫기 실패: " + e.getMessage());
+	        }
+	    }
 	}
 
 	private void initializeRankingTableAndButtons() {

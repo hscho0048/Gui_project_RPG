@@ -434,6 +434,7 @@ public class GameView extends JPanel {
 		restartGame();
 		CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
 		cardLayout.show(mainFrame.getContentPane(), "HomeView");
+		homeView.updateRanking();       // 홈 화면으로 돌아오며 랭킹 갱신
 	}
 
 	private void returnToHome() {
