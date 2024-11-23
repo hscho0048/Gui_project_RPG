@@ -17,7 +17,9 @@ public class GameController {
 	private Random random;
 	private Connection connection;
 
+	private UserController userController = new UserController(); 
 	public GameController(Player player, Opponent opponent) {
+		
 		this.player = player;
 		this.opponent = opponent;
 		this.random = new Random();
@@ -86,22 +88,28 @@ public class GameController {
 
 	// 다음 스테이지로 전환
 	public void nextStage() {
-		if (currentStage < MAX_STAGE) {
-			currentStage++;
-			if (currentStage == 10) {
-				player.levelUp(currentStage * 4, currentStage + random.nextInt(8), currentStage + random.nextInt(8),
-						1 + random.nextInt(4), 1 + random.nextInt(4));
-				// 스테이지 10에서 보스 몬스터 설정
-				opponent = new BossMonster("드래곤", 1000, 50, 50, 40, 40);
-				System.out.println("보스 몬스터 등장: " + opponent.getName());
-			} else {
-				// 일반 상대 레벨업
-				opponent.levelUp(currentStage * 5, currentStage + random.nextInt(8), currentStage + random.nextInt(8),
-						1 + random.nextInt(4), 1 + random.nextInt(4));
-				player.levelUp(currentStage * 4, currentStage + random.nextInt(8), currentStage + random.nextInt(8),
-						1 + random.nextInt(4), 1 + random.nextInt(4));
-			}
-		}
+	    if (currentStage < MAX_STAGE) {
+	        currentStage++;
+
+	        // 스테이지 업데이트를 데이터베이스에 반영
+	        userController.updateCurrentStageInDatabase(player.getId(), currentStage);
+
+	        if (currentStage == 10) {
+	            // 플레이어와 보스 몬스터 레벨업
+	            player.levelUp(currentStage * 4, currentStage + random.nextInt(8), currentStage + random.nextInt(8),
+	                    1 + random.nextInt(4), 1 + random.nextInt(4));
+	            opponent = new BossMonster("드래곤", 1000, 50, 50, 40, 40); // 보스 몬스터 설정
+	            System.out.println("보스 몬스터 등장: " + opponent.getName());
+	        } else {
+	            // 일반 상대 레벨업
+	            opponent.levelUp(currentStage * 5, currentStage + random.nextInt(8), currentStage + random.nextInt(8),
+	                    1 + random.nextInt(4), 1 + random.nextInt(4));
+
+	            // 플레이어 레벨업
+	            player.levelUp(currentStage * 4, currentStage + random.nextInt(8), currentStage + random.nextInt(8),
+	                    1 + random.nextInt(4), 1 + random.nextInt(4));
+	        }
+	    }
 	}
 
 	public void resetGame() {

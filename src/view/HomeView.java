@@ -201,6 +201,23 @@ public class HomeView extends JPanel {
 		// 랭킹 업데이트
 		updateRanking();
 	}
+	public void updateStage(int currentStage) {
+	    DefaultTableModel tableModel = (DefaultTableModel) rankingTable.getModel();
+	    int rowCount = tableModel.getRowCount();
+
+	    // 랭킹 테이블에서 플레이어의 스테이지를 업데이트
+	    for (int i = 0; i < rowCount; i++) {
+	        String playerName = (String) tableModel.getValueAt(i, 1); // 1번 열: 플레이어 이름
+	        if (playerName.equals(player.getName())) {
+	            tableModel.setValueAt(currentStage, i, 5); // 5번 열: 스테이지
+	            break;
+	        }
+	    }
+
+	    // 랭킹 업데이트
+	    updateRanking();
+	}
+
 
 	private void initializeGameAndShopViews() {
 		if (gameView == null) {
@@ -230,33 +247,20 @@ public class HomeView extends JPanel {
 	        boolean hasData = false;
 	        while (rs.next()) {
 	            hasData = true;
-
-	            // 데이터베이스에서 값 가져오기
 	            int rank = rs.getInt("rank");
 	            String playerName = rs.getString("player");
 	            String character = rs.getString("character") != null ? rs.getString("character") : "UNKNOWN";
 
-	            // items 필드에서 마지막 아이템만 추출
 	            String items = rs.getString("items");
-	            String lastItem = "없음"; // 기본값 설정
+	            String lastItem = "없음";
 	            if (items != null && !items.isEmpty()) {
 	                String[] itemArray = items.split(",");
-	                lastItem = itemArray[itemArray.length - 1].trim(); // 마지막 아이템 추출 및 트림 처리
+	                lastItem = itemArray[itemArray.length - 1].trim(); // 마지막 아이템 가져오기
 	            }
 
 	            int turns = rs.getInt("turns");
 	            int stage = rs.getInt("stage");
 
-	            // 디버깅: 데이터 확인
-	            System.out.println("랭킹 데이터 추가: " +
-	                    "순위=" + rank +
-	                    ", 플레이어=" + playerName +
-	                    ", 캐릭터=" + character +
-	                    ", 마지막 아이템=" + lastItem +
-	                    ", 턴수=" + turns +
-	                    ", 완료한 스테이지=" + stage);
-
-	            // 테이블에 데이터 추가
 	            tableModel.addRow(new Object[]{rank, playerName, character, lastItem, turns, stage});
 	        }
 
@@ -266,14 +270,9 @@ public class HomeView extends JPanel {
 	    } catch (SQLException e) {
 	        JOptionPane.showMessageDialog(this, "랭킹 데이터를 처리하는 중 오류 발생: " + e.getMessage(), "오류",
 	                JOptionPane.ERROR_MESSAGE);
-	    } finally {
-	        try {
-	            rs.close(); // ResultSet 자원 해제
-	        } catch (SQLException e) {
-	            System.err.println("ResultSet 닫기 실패: " + e.getMessage());
-	        }
 	    }
 	}
+
 
 	private void initializeRankingTableAndButtons() {
 		// 버튼 패널 초기화

@@ -118,6 +118,31 @@ public class UserController {
 	        return false;
 	    }
 	}
+	public boolean updateStage(String username, int stage) {
+	    // 업데이트 쿼리 작성
+	    String query = "UPDATE users SET stage = ? WHERE username = ?";
+	    try (PreparedStatement stmt = connection.prepareStatement(query)) {
+	        // 쿼리 파라미터 설정
+	        stmt.setInt(1, stage);  // stage 값을 첫 번째 파라미터로 설정
+	        stmt.setString(2, username); // username 값을 두 번째 파라미터로 설정
+
+	        // 쿼리 실행
+	        int rowsAffected = stmt.executeUpdate();
+
+	        // 영향 받은 행 수 출력
+	        if (rowsAffected > 0) {
+	            System.out.println(username + "의 스테이지가 " + stage + "으로 업데이트되었습니다.");
+	            return true;
+	        } else {
+	            System.out.println("사용자 " + username + "이(가) 존재하지 않거나 스테이지 업데이트가 이루어지지 않았습니다.");
+	            return false;
+	        }
+	    } catch (SQLException e) {
+	        // 예외 처리
+	        System.out.println("스테이지 업데이트 실패: " + e.getMessage());
+	        return false;
+	    }
+	}
 
 
 	// 특정 사용자의 점수 조회 메서드
@@ -168,26 +193,35 @@ public class UserController {
 	}
 
 	public ResultSet getRanking() {
-	    String initializeRankQuery = "SET @rank = 0;";  // rank 변수 초기화
+	    // 랭킹 변수 초기화
+	    String initializeRankQuery = "SET @rank = 0;";
+
+	    // 랭킹 데이터 가져오는 쿼리
 	    String rankingQuery = "SELECT (@rank := @rank + 1) AS `rank`, " +
 	                          "u.username AS player, " +
-	                          "`character_name` AS 'character', " + 
+	                          "u.character_name AS 'character', " + 
 	                          "IFNULL(u.items, '없음') AS 'items', " + 
 	                          "u.turns AS turns, " +  // 턴수 추가
-	                          "us.stage AS stage " +  // 완료한 스테이지 추가
+	                          "u.stage AS stage " +  // 완료한 스테이지 추가
 	                          "FROM users u " +
-	                          "LEFT JOIN user_stage us ON u.username = us.username " +
-	                          "ORDER BY u.turns DESC, us.stage DESC;";  // 턴수와 스테이지에 따라 정렬
+	                          "ORDER BY u.turns DESC, u.stage DESC;";  // 턴수와 스테이지에 따라 정렬
 
 	    try {
+	        // Statement 생성
 	        Statement stmt = connection.createStatement();
-	        stmt.execute(initializeRankQuery); // @rank 초기화
-	        return stmt.executeQuery(rankingQuery);  // 랭킹 데이터를 가져오는 쿼리 실행
+
+	        // rank 변수 초기화
+	        stmt.execute(initializeRankQuery);
+
+	        // 랭킹 쿼리 실행 후 결과 반환
+	        return stmt.executeQuery(rankingQuery);
 	    } catch (SQLException e) {
+	        // 오류 발생 시 메시지 출력
 	        System.err.println("랭킹 데이터를 가져오는 데 실패했습니다: " + e.getMessage());
 	        return null;
 	    }
 	}
+
 	// 랭킹 업데이트 메서드
 	public void updateRanking(DefaultTableModel tableModel) {
 	    // 기존 데이터 초기화
@@ -195,13 +229,12 @@ public class UserController {
 
 	    String rankingQuery = "SELECT (@rank := @rank + 1) AS `rank`, " +
 	                          "u.username AS player, " +
-	                          "`character_name` AS 'character', " + 
-	                          "IFNULL(u.items, '없음') AS 'items', " +  // 아이템 정보 추가
+	                          "u.character_name AS 'character', " +
+	                          "IFNULL(u.items, '없음') AS 'items', " +
 	                          "u.turns AS turns, " + 
-	                          "us.stage AS stage " + 
+	                          "u.stage AS stage " +
 	                          "FROM users u " +
-	                          "LEFT JOIN user_stage us ON u.username = us.username " +
-	                          "ORDER BY u.turns DESC, us.stage DESC;";
+	                          "ORDER BY u.turns DESC, u.stage DESC;";
 
 	    try (Statement stmt = connection.createStatement();
 	         ResultSet rs = stmt.executeQuery(rankingQuery)) {
@@ -216,6 +249,9 @@ public class UserController {
 	            int turns = rs.getInt("turns");
 	            int stage = rs.getInt("stage");
 
+	            // 디버깅: stage 값 출력
+	            System.out.println("디버깅: " + player + "의 스테이지: " + stage);
+
 	            // 데이터 추가
 	            tableModel.addRow(new Object[]{rank, player, character, items, turns, stage});
 	        }
@@ -227,6 +263,8 @@ public class UserController {
 	        System.err.println("랭킹 데이터를 처리하는 중 오류 발생: " + e.getMessage());
 	    }
 	}
+
+
 	
 	public boolean recordPurchase(int userId, String itemName) {
 	    if (userId <= 0) {
@@ -384,6 +422,29 @@ public class UserController {
             System.err.println("아이템 가져오기 실패: " + e.getMessage());
         }
         return null; // 실패 시 null 반환
+    }
+    // Method to update the current stage in the database
+    public void updateCurrentStageInDatabase(int userId, int currentStage) {
+        // Check if the connection exists
+        if (connection == null) {
+            System.err.println("Database connection is not established.");
+            return;
+        }
+
+        String query = "UPDATE users SET stage = ? WHERE id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, currentStage); // Set the currentStage value
+            stmt.setInt(2, userId); // Set the user ID
+
+            int rowsUpdated = stmt.executeUpdate();
+            if (rowsUpdated > 0) {
+                System.out.println("Stage updated successfully. Current stage: " + currentStage);
+            } else {
+                System.out.println("Stage update failed: User ID not found.");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error updating stage: " + e.getMessage());
+        }
     }
 
 

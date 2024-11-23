@@ -34,6 +34,7 @@ public class GameView extends JPanel {
 	private JPanel inventoryPanel; // 아이템 인벤토리 패널
 	private JLabel turnCountLabel; // 턴 수를 표시할 레이블
 	private int turnCount = 1; // 초기 턴 수
+	private int currentStage = 1; // 초기 스테이지 수
 
 	public GameView(String playerName, UserController userController, Player player, JFrame mainFrame) {
 		this.mainFrame = mainFrame;
@@ -399,18 +400,23 @@ public class GameView extends JPanel {
 
 		returnToHome();
 	}
+	
 
 	private void endGame() {
-		updateStatus("게임이 종료되었습니다!");
-		userController.updateTurns(player.getName(), turnCount); // 나의 턴수로 점수 업데이트
+	    updateStatus("게임이 종료되었습니다!");
+	    userController.updateTurns(player.getName(), turnCount); // 나의 턴수로 점수 업데이트
 
-		// 게임 종료 후 턴수를 HomeView에 전달하여 업데이트
-		homeView.updateTurnCount(turnCount); // HomeView에서 턴수를 업데이트하는 메서드 호출
-		homeView.updateRanking(); // HomeView에서 랭킹을 갱신하는 메서드 호출
+	    // 게임 종료 후 스테이지 업데이트
+	    userController.updateStage(player.getName(), currentStage); // 현재 스테이지 업데이트
 
-		returnToHome();
+	    // 게임 종료 후 턴수를 HomeView에 전달하여 업데이트
+	    homeView.updateTurnCount(turnCount); // HomeView에서 턴수를 업데이트하는 메서드 호출
+	    homeView.updateStage(currentStage); // HomeView에서 스테이지를 업데이트하는 메서드 호출
+	    homeView.updateRanking(); // HomeView에서 랭킹을 갱신하는 메서드 호출
 
+	    returnToHome();
 	}
+
 
 	public void restartGame() {
 		gameController.resetGame(); // 게임 상태 초기화
