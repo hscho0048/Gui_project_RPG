@@ -228,21 +228,45 @@ public class UserController {
 	    }
 	}
 	
-	public void recordPurchase(int userId, String itemName) {
-	    String query = "INSERT INTO purchases (user_id, item_name) VALUES (?, ?)";
-	    try (PreparedStatement stmt = connection.prepareStatement(query)) {
-	        stmt.setInt(1, userId);        // 사용자 ID
-	        stmt.setString(2, itemName);  // 아이템 이름
+	public boolean recordPurchase(int userId, String itemName) {
+	    if (userId <= 0) {
+	        System.err.println("유효하지 않은 userId: " + userId);
+	        return false;
+	    }
 
-	        int rowsInserted = stmt.executeUpdate();
-	        
-	        if (rowsInserted > 0) {
-	            System.out.println("아이템 구매 기록이 저장되었습니다: " + itemName);
+	    String getItemsQuery = "SELECT items FROM users WHERE id = ?";
+	    String updateItemsQuery = "UPDATE users SET items = ? WHERE id = ?";
+
+	    try (
+	        PreparedStatement getItemsStmt = connection.prepareStatement(getItemsQuery);
+	        PreparedStatement updateItemsStmt = connection.prepareStatement(updateItemsQuery)
+	    ) {
+	        getItemsStmt.setInt(1, userId);
+	        ResultSet rs = getItemsStmt.executeQuery();
+
+	        String currentItems = null;
+	        if (rs.next()) {
+	            currentItems = rs.getString("items");
+	        }
+
+	        String updatedItems = (currentItems == null || currentItems.isEmpty())
+	                ? itemName
+	                : currentItems + "," + itemName;
+
+	        updateItemsStmt.setString(1, updatedItems);
+	        updateItemsStmt.setInt(2, userId);
+	        int rowsUpdated = updateItemsStmt.executeUpdate();
+
+	        if (rowsUpdated > 0) {
+	            System.out.println("아이템이 업데이트되었습니다: " + updatedItems);
+	            return true; // 성공 시 true 반환
 	        } else {
-	            System.out.println("아이템 구매 기록 저장 실패.");
+	            System.out.println("아이템 업데이트 실패.");
+	            return false; // 실패 시 false 반환
 	        }
 	    } catch (SQLException e) {
-	        System.out.println("아이템 구매 기록 저장 실패: " + e.getMessage());
+	        System.err.println("아이템 기록 중 오류 발생: " + e.getMessage());
+	        return false; // 예외 발생 시 false 반환
 	    }
 	}
 	public boolean updateCharacterName(int userId, String characterName) {

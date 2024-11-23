@@ -123,38 +123,38 @@ public class GameView extends JPanel {
 		add(buttonPanel, BorderLayout.SOUTH);
 	}
 
+	// 메인 패널을 초기화하는 메서드
 	private void initializePlayerPanel() {
-	    // 플레이어 이미지 레이블
+	    // 캐릭터 관련 UI 요소
 	    playerImageLabel = new JLabel(player.getCharacterImage());
-	    
-	    // 플레이어 정보 레이블
 	    playerInfoLabel = new JLabel("플레이어: " + player.getName() + " | 체력: " + player.getHealth());
-	    
-	    // 플레이어 체력 바 설정
 	    playerHealthBar = new JProgressBar();
 	    setupHealthBar(playerHealthBar, player.getHealth(), player.getMaxHealth());
 
-	    // 인벤토리 패널 초기화
+	    // 인벤토리 패널 (독립적으로 관리)
 	    inventoryPanel = new JPanel();
-	    inventoryPanel.setLayout(new BoxLayout(inventoryPanel, BoxLayout.Y_AXIS)); // BoxLayout으로 설정
+	    inventoryPanel.setLayout(new BoxLayout(inventoryPanel, BoxLayout.Y_AXIS));
 	    inventoryPanel.setBorder(BorderFactory.createTitledBorder("인벤토리"));
-	    updateInventoryPanel(); // 초기화 시 인벤토리 데이터 반영
+	    updateInventoryPanel(); // 인벤토리 갱신
 
-	    // 플레이어 정보 및 인벤토리 포함 패널 생성
+	    // 플레이어 패널 구성
 	    JPanel playerPanel = new JPanel();
-	    playerPanel.setLayout(new BoxLayout(playerPanel, BoxLayout.Y_AXIS)); // BoxLayout 사용
+	    playerPanel.setLayout(new BoxLayout(playerPanel, BoxLayout.Y_AXIS));
 	    playerPanel.add(playerImageLabel);
 	    playerPanel.add(playerInfoLabel);
 	    playerPanel.add(playerHealthBar);
-	    playerPanel.add(new JScrollPane(inventoryPanel)); // 인벤토리 스크롤 추가
 
-	    // 전체 레이아웃에 플레이어 패널 추가
-	    add(playerPanel, BorderLayout.WEST);
+	    // 메인 패널에 추가
+	    JPanel mainPanel = new JPanel(new BorderLayout());
+	    mainPanel.add(playerPanel, BorderLayout.NORTH); // 캐릭터 정보
+	    mainPanel.add(new JScrollPane(inventoryPanel), BorderLayout.CENTER); // 인벤토리 정보
+
+	    add(mainPanel, BorderLayout.WEST); // 전체 레이아웃에 추가
 	}
-	private void updateInventoryPanel() {
-	    inventoryPanel.removeAll(); // 기존 패널 내용 제거
 
-	    // 플레이어의 인벤토리 아이템 가져오기
+	private void updateInventoryPanel() {
+	    inventoryPanel.removeAll(); // 인벤토리 내용만 초기화
+
 	    List<Item> inventory = player.getInventory();
 	    if (inventory == null || inventory.isEmpty()) {
 	        JLabel emptyLabel = new JLabel("인벤토리가 비었습니다.");
@@ -162,30 +162,18 @@ public class GameView extends JPanel {
 	        inventoryPanel.add(emptyLabel);
 	    } else {
 	        for (Item item : inventory) {
-	            // 아이템의 이름과 이미지를 가져와 버튼 생성
 	            JButton itemButton = new JButton(item.getName(), item.getImage());
 	            itemButton.setVerticalTextPosition(SwingConstants.BOTTOM);
 	            itemButton.setHorizontalTextPosition(SwingConstants.CENTER);
-
-	            // 버튼 스타일 설정
 	            itemButton.setPreferredSize(new Dimension(80, 100));
-	            itemButton.setBackground(Color.WHITE);
-	            itemButton.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
-
-	            // 아이템 사용 이벤트 추가
-	            itemButton.addActionListener(e -> {
-	                useItem(item, itemButton); // 아이템 사용 메서드 호출
-	            });
-
-	            // 버튼을 패널에 추가
+	            itemButton.addActionListener(e -> useItem(item, itemButton)); // 아이템 사용 이벤트
 	            inventoryPanel.add(itemButton);
 	        }
 	    }
 
-	    inventoryPanel.revalidate(); // UI 업데이트
+	    inventoryPanel.revalidate(); // 인벤토리 갱신
 	    inventoryPanel.repaint();
 	}
-
 
 	private void initializeOpponentPanel() {
 		opponentImageLabel = new JLabel(new ImageIcon(getClass().getClassLoader().getResource("opponentImage.png")));
