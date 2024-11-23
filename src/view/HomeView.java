@@ -35,15 +35,24 @@ public class HomeView extends JPanel {
 
 	    // 버튼 패널 초기화
 	    JPanel buttonPanel = new JPanel(new GridLayout(4, 1, 10, 10)); // 4개의 버튼과 간격 설정
+
+	    // 대결 버튼 초기화 (기본적으로 비활성화)
 	    battleButton = new JButton("대결");
+	    battleButton.setEnabled(false); // 기본적으로 비활성화
 	    battleButton.addActionListener(e -> showGameView());
 
+	    // 상점 버튼 초기화
 	    shopButton = new JButton("상점");
 	    shopButton.addActionListener(e -> showShopView());
 
+	    // 캐릭터 선택 버튼 초기화
 	    characterSelectButton = new JButton("캐릭터 선택");
-	    characterSelectButton.addActionListener(e -> showCharacterView()); // 캐릭터 선택
+	    characterSelectButton.addActionListener(e -> {
+	        showCharacterView(); // 캐릭터 선택 화면 표시
+	        enableBattleButton(); // 캐릭터 선택 후 대결 버튼 활성화
+	    });
 
+	    // 랭킹 갱신 버튼 초기화
 	    JButton refreshRankingButton = new JButton("랭킹 갱신");
 	    refreshRankingButton.addActionListener(e -> {
 	        updateRanking(); // 랭킹 갱신 호출
@@ -82,6 +91,12 @@ public class HomeView extends JPanel {
 	    updateRanking();
 	}
 
+	// 대결 버튼 활성화 메서드
+	private void enableBattleButton() {
+	        battleButton.setEnabled(true);
+	        System.out.println("대결 버튼 활성화됨: " + player.getCharacterName());
+
+	}
 
 	// 캐릭터 선택 후 업데이트
 	public boolean updateCharacter(String characterName) {

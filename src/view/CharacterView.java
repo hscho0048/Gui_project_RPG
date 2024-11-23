@@ -32,7 +32,7 @@ public class CharacterView extends JPanel {
 		add(playerInfoLabel, BorderLayout.NORTH);
 
 		// 캐릭터 패널 생성
-		characterPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+		characterPanel = new JPanel(new GridLayout(0, 1, 10, 10));
 		characterPanel.setOpaque(false);
 
 		// MyCharacter에서 캐릭터 목록 가져오기
@@ -48,17 +48,14 @@ public class CharacterView extends JPanel {
 
 		add(characterPanel, BorderLayout.CENTER);
 
-		// 선택 버튼 및 뒤로가기 버튼 추가
+		// 선택  버튼 추가
 		selectButton = new JButton("선택");
 		selectButton.addActionListener(e -> handleSelectCharacter());
 
-		backButton = new JButton("Home");
-		backButton.addActionListener(e -> handleBack());
-
+		
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
 		buttonPanel.add(selectButton);
-		buttonPanel.add(backButton);
 
 		add(buttonPanel, BorderLayout.SOUTH);
 
