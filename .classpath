@@ -2,12 +2,28 @@
 <classpath>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-22">
 		<attributes>
+			<attribute name="annotationpath" value="C:/Users/choho/Downloads/sqlite-jdbc-3.47.0.0.jar"/>
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="resources"/>
 	<classpathentry kind="lib" path="C:/Users/choho/Downloads/mysql-connector-j-9.1.0.jar">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="C:/Users/choho/Downloads/sqlite-jdbc-3.47.0.0.jar">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="C:/Users/choho/Downloads/slf4j-simple-2.0.9.jar">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="C:/Users/choho/Downloads/slf4j-api-2.0.9.jar">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>
