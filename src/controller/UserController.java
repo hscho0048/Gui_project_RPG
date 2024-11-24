@@ -6,6 +6,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.io.*;
+import java.nio.file.*;
+import java.sql.*;
 
 import javax.swing.table.DefaultTableModel;
 
@@ -19,13 +22,74 @@ public class UserController {
 
 	public UserController() {
 		try {
-			String url = "jdbc:mysql://localhost:3306/RPGGame";
-			String user = "root";
-			String password = "1111"; // 자신의 데이터베이스 비밀번호로 수정
-			connection = DriverManager.getConnection(url, user, password);
-			System.out.println("데이터베이스에 연결되었습니다.");
+			// SQLite 드라이버 명시적 로드
+			Class.forName("org.sqlite.JDBC");
+			System.out.println("SQLite 드라이버 로드 성공.");
+
+			// JAR 내부 데이터베이스 파일을 외부로 복사
+			extractDatabaseFromResources();
+
+			// SQLite 데이터베이스 연결
+			String dbPath = Paths.get("RPGGame.db").toAbsolutePath().toString(); // 절대 경로로 설정
+			String url = "jdbc:sqlite:" + dbPath; // 외부로 복사된 파일 사용
+			System.out.println("데이터베이스 경로: " + dbPath);
+			connection = DriverManager.getConnection(url);
+			System.out.println("SQLite 데이터베이스에 연결되었습니다.");
+
+			// 필요한 테이블 생성
+			initializeTables();
+
+		} catch (ClassNotFoundException e) {
+			System.out.println("SQLite 드라이버 로드 실패: " + e.getMessage());
 		} catch (SQLException e) {
-			System.out.println("데이터베이스 연결 실패: " + e.getMessage());
+			System.out.println("SQLite 데이터베이스 연결 실패: " + e.getMessage());
+		}
+	}
+
+	private void extractDatabaseFromResources() {
+		// JAR 내부 리소스에서 RPGGame.db 파일을 읽어 외부로 복사
+		try (InputStream input = getClass().getClassLoader().getResourceAsStream("RPGGame.db")) {
+			if (input == null) {
+				throw new FileNotFoundException("RPGGame.db 파일을 리소스 폴더에서 찾을 수 없습니다.");
+			}
+
+			Files.copy(input, Paths.get("RPGGame.db"), StandardCopyOption.REPLACE_EXISTING);
+			System.out.println("RPGGame.db 파일이 외부로 복사되었습니다.");
+		} catch (IOException e) {
+			System.err.println("데이터베이스 파일 복사 실패: " + e.getMessage());
+		}
+	}
+
+	private void initializeTables() {
+		try (Statement stmt = connection.createStatement()) {
+			// users 테이블 생성
+			String createUsersTableSQL = "CREATE TABLE IF NOT EXISTS users (" + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+					+ "username TEXT NOT NULL UNIQUE, " + "password TEXT NOT NULL, " + "character_name TEXT, "
+					+ "money INTEGER DEFAULT 100, " + "items TEXT, " + "turns INTEGER DEFAULT 0, "
+					+ "score INTEGER DEFAULT 0" + ");";
+			stmt.execute(createUsersTableSQL);
+
+			// inventory 테이블 생성
+			String createInventoryTableSQL = "CREATE TABLE IF NOT EXISTS inventory ("
+					+ "id INTEGER PRIMARY KEY AUTOINCREMENT, " + "user_id INTEGER NOT NULL, "
+					+ "item_name TEXT NOT NULL, " + "quantity INTEGER NOT NULL" + ");";
+			stmt.execute(createInventoryTableSQL);
+
+			// purchases 테이블 생성
+			String createPurchasesTableSQL = "CREATE TABLE IF NOT EXISTS purchases ("
+					+ "id INTEGER PRIMARY KEY AUTOINCREMENT, " + "user_id INTEGER NOT NULL, "
+					+ "item_name TEXT NOT NULL" + ");";
+			stmt.execute(createPurchasesTableSQL);
+
+			// user_stage 테이블 생성
+			String createUserStageTableSQL = "CREATE TABLE IF NOT EXISTS user_stage (" + "username TEXT NOT NULL, "
+					+ "stage INTEGER DEFAULT 0" + ");";
+			stmt.execute(createUserStageTableSQL);
+
+			System.out.println("테이블 초기화 완료!");
+
+		} catch (SQLException e) {
+			System.out.println("테이블 생성 중 오류 발생: " + e.getMessage());
 		}
 	}
 
@@ -174,22 +238,16 @@ public class UserController {
 	}
 
 	public ResultSet getRanking() {
-		// 랭킹 변수 초기화
-		String initializeRankQuery = "SET @rank = 0;";
-
-		// 랭킹 데이터 가져오는 쿼리
-		String rankingQuery = "SELECT (@rank := @rank + 1) AS `rank`, " + "u.username AS player, "
-				+ "u.character_name AS 'character', " + "IFNULL(u.items, '없음') AS 'items', " + "u.turns AS turns, " + // 턴수
-																														// 추가
-				"u.stage AS stage " + // 완료한 스테이지 추가
-				"FROM users u " + "ORDER BY u.stage DESC, u.turns ASC;"; // 턴수와 스테이지에 따라 정렬
-
+		  String rankingQuery = "SELECT ROW_NUMBER() OVER (ORDER BY stage DESC, turns ASC) AS rank, " +
+                  "username AS player, " +
+                  "character_name AS character, " +
+                  "COALESCE(items, '없음') AS items, " +
+                  "turns, stage " +
+                  "FROM users " +
+                  "ORDER BY stage DESC, turns ASC";
 		try {
 			// Statement 생성
 			Statement stmt = connection.createStatement();
-
-			// rank 변수 초기화
-			stmt.execute(initializeRankQuery);
 
 			// 랭킹 쿼리 실행 후 결과 반환
 			return stmt.executeQuery(rankingQuery);
