@@ -16,8 +16,8 @@ public class MyCharacter {
 		ImageIcon wizardImage = new ImageIcon(getClass().getClassLoader().getResource("wizard.png"));
 		
 		// 캐릭터 생성 - 임의로 공격력, 특수공격력 지정
-		characters.add(new Character("전사", 150, 10, 100, 100, warriorImage));
-		characters.add(new Character("법사", 10, 150, 100, 100, wizardImage));
+		characters.add(new Character("전사", 150, 10, 20, 10, warriorImage));
+		characters.add(new Character("법사", 10, 150, 10, 20, wizardImage));
 	}
 	
 	public List<Character> getCharacter(){

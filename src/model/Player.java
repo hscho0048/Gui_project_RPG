@@ -203,6 +203,7 @@ public class Player {
 
 			if (!itemExists) {
 				inventory.add(item); // 인벤토리에 추가
+				item.increaseQuantity(1);
 			}
 			return true; // 구매 성공
 		} else {
@@ -218,6 +219,20 @@ public class Player {
 		this.defensePower = defensePower;
 		this.specialDefensePower = specialDefensePower;
 		this.characterImage = characterImage;
+	}
+
+	public int takeDamage(int damage, boolean isSpecialAttack) {
+		int reducedDamage;
+		if (isSpecialAttack) {
+			reducedDamage = Math.max(0, damage - specialDefensePower); // 방어력을 반영한 최종 데미지 계산
+		} else {
+			reducedDamage = Math.max(0, damage - defensePower); // 방어력을 반영한 최종 데미지 계산
+		}
+
+		health -= reducedDamage; // 체력 감소
+		health = Math.max(0, health); // 체력이 0 이하로 내려가지 않도록 제한
+
+		return reducedDamage; // 최종 데미지를 반환
 	}
 
 	public ImageIcon getCharacterImage() {

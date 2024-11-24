@@ -32,24 +32,33 @@ public class HomeView extends JPanel {
 		System.out.println("디버깅: HomeView에서 받은 userId: " + player.getId());
 
 		setLayout(new BorderLayout()); // 전체 레이아웃 설정
-		initializeRankingTableAndButtons();
 
-		// 버튼 패널
-		JPanel buttonPanel = new JPanel(new GridLayout(3, 1)); // 세로로 버튼 배치
+		// 버튼 패널 초기화
+		JPanel buttonPanel = new JPanel(new GridLayout(3, 1, 10, 10)); // 4개의 버튼과 간격 설정
+
+		// 대결 버튼 초기화 (기본적으로 비활성화)
 		battleButton = new JButton("대결");
+		battleButton.setEnabled(false); // 기본적으로 비활성화
 		battleButton.addActionListener(e -> showGameView());
+
+		// 상점 버튼 초기화
 		shopButton = new JButton("상점");
 		shopButton.addActionListener(e -> showShopView());
-		characterSelectButton = new JButton("캐릭터 선택");
-		characterSelectButton.addActionListener(e -> showCharacterView()); // 캐릭터 선택
 
+		// 캐릭터 선택 버튼 초기화
+		characterSelectButton = new JButton("캐릭터 선택");
+		characterSelectButton.addActionListener(e -> {
+			showCharacterView(); // 캐릭터 선택 화면 표시
+			enableBattleButton(); // 캐릭터 선택 후 대결 버튼 활성화
+		});
+
+		// 버튼 패널에 버튼 추가
 		buttonPanel.add(battleButton);
 		buttonPanel.add(shopButton);
 		buttonPanel.add(characterSelectButton);
 
-		// 랭킹 패널
-		JPanel rankingPanel = new JPanel();
-		rankingPanel.setLayout(new BorderLayout());
+		// 랭킹 패널 초기화
+		JPanel rankingPanel = new JPanel(new BorderLayout());
 		rankingPanel.setBorder(BorderFactory.createTitledBorder("랭킹"));
 
 		// JTable 생성
@@ -60,10 +69,30 @@ public class HomeView extends JPanel {
 
 		// 스크롤 가능하도록 설정
 		JScrollPane scrollPane = new JScrollPane(rankingTable);
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+		// 랭킹 패널에 스크롤 패널 추가
 		rankingPanel.add(scrollPane, BorderLayout.CENTER);
+
+		// 전체 레이아웃에 패널 추가
+		add(buttonPanel, BorderLayout.WEST);
+		add(rankingPanel, BorderLayout.CENTER); // 랭킹 패널을 중앙에 추가
 
 		// 초기 랭킹 로드
 		updateRanking();
+	}
+
+	// 대결 버튼 활성화 메서드
+	private void enableBattleButton() {
+		battleButton.setEnabled(true);
+		System.out.println("대결 버튼 활성화됨: " + player.getCharacterName());
+
+	}
+
+	// 대결 버튼 비활성화 메서드
+	public void disableBattleButton() {
+		battleButton.setEnabled(false);
 	}
 
 	// 캐릭터 선택 후 업데이트
@@ -80,12 +109,6 @@ public class HomeView extends JPanel {
 
 		boolean updateSuccess = userController.updateCharacterName(userId, characterName); // 데이터베이스 업데이트
 
-		if (updateSuccess) {
-			updateRanking(); // 캐릭터 업데이트 후 랭킹 갱신
-		} else {
-			JOptionPane.showMessageDialog(this, "캐릭터 업데이트 실패", "오류", JOptionPane.ERROR_MESSAGE);
-		}
-
 		return updateSuccess;
 	}
 
@@ -96,7 +119,7 @@ public class HomeView extends JPanel {
 		}
 
 		// GameView 생성 및 추가
-		GameView gameView = new GameView(player.getName(), userController, player, mainFrame);
+		GameView gameView = new GameView(player.getName(), userController, player, mainFrame, this);
 		mainFrame.getContentPane().add(gameView, "GameView");
 
 		// GameView 화면으로 전환
@@ -153,26 +176,9 @@ public class HomeView extends JPanel {
 		cardLayout.show(mainFrame.getContentPane(), "CharacterView");
 	}
 
-	public void updateTurnCount(int turnCount) {
-		DefaultTableModel tableModel = (DefaultTableModel) rankingTable.getModel();
-		int rowCount = tableModel.getRowCount();
-
-		// 랭킹 테이블에서 플레이어의 턴수를 업데이트
-		for (int i = 0; i < rowCount; i++) {
-			String playerName = (String) tableModel.getValueAt(i, 1);
-			if (playerName.equals(player.getName())) {
-				tableModel.setValueAt(turnCount, i, 4); // 4번 열: 턴수
-				break;
-			}
-		}
-
-		// 랭킹 업데이트
-		updateRanking();
-	}
-
 	private void initializeGameAndShopViews() {
 		if (gameView == null) {
-			GameView gameView = new GameView(player.getName(), userController, player, mainFrame);
+			GameView gameView = new GameView(player.getName(), userController, player, mainFrame, this);
 			mainFrame.getContentPane().add(gameView, "GameView");
 			System.out.println("GameView 초기화 완료");
 		}
@@ -201,11 +207,18 @@ public class HomeView extends JPanel {
 				int rank = rs.getInt("rank");
 				String playerName = rs.getString("player");
 				String character = rs.getString("character") != null ? rs.getString("character") : "UNKNOWN";
-				String items = rs.getString("items") != null ? rs.getString("items") : "없음";
+
+				String items = rs.getString("items");
+				String lastItem = "없음";
+				if (items != null && !items.isEmpty()) {
+					String[] itemArray = items.split(",");
+					lastItem = itemArray[itemArray.length - 1].trim(); // 마지막 아이템 가져오기
+				}
+
 				int turns = rs.getInt("turns");
 				int stage = rs.getInt("stage");
 
-				tableModel.addRow(new Object[] { rank, playerName, character, items, turns, stage });
+				tableModel.addRow(new Object[] { rank, playerName, character, lastItem, turns, stage });
 			}
 
 			if (!hasData) {
