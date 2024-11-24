@@ -1,12 +1,16 @@
 package view;
 
 import javax.swing.*;
+import javax.swing.Timer;
+import java.awt.event.ActionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.Random;
-import java.util.TimerTask;
-import java.util.Iterator;
 import java.util.List;
+
+import java.awt.image.BufferedImage;
+import java.awt.Graphics2D;
+import java.awt.AlphaComposite;
 
 import controller.GameController;
 import controller.UserController;
@@ -83,6 +87,8 @@ public class GameView extends JPanel {
 		// 상단 패널 구성
 		topPanel.add(stageLabel, BorderLayout.CENTER);
 		topPanel.add(turnCountLabel, BorderLayout.WEST);
+		topPanel.setMaximumSize(new Dimension(800, 30));
+		topPanel.setPreferredSize(new Dimension(800, 30));
 
 		// 전체 레이아웃에 상단 패널 추가
 		add(topPanel, BorderLayout.NORTH);
@@ -95,10 +101,10 @@ public class GameView extends JPanel {
 	private void initializeLogAndButtons() {
 		// 버튼 패널
 		attackButton = new JButton("공격");
-		attackButton.addActionListener(e -> handleAttackButton());
+		attackButton.addActionListener(e -> handleAttackButton(true));
 
 		skillAttackButton = new JButton("특수공격");
-		skillAttackButton.addActionListener(e -> handleSkillAttackButton()); // 특수공격 버튼 클릭 이벤트 추가
+		skillAttackButton.addActionListener(e -> handleAttackButton(false)); // 특수공격 버튼 클릭 이벤트 추가
 
 		defendButton = new JButton("방어");
 		defendButton.addActionListener(e -> playerDefend());
@@ -116,7 +122,8 @@ public class GameView extends JPanel {
 		buttonPanel.add(defendButton);
 		buttonPanel.add(nextButton);
 		buttonPanel.add(homeButton);
-
+		buttonPanel.setMaximumSize(new Dimension(800, 30));
+		buttonPanel.setPreferredSize(new Dimension(800, 30));
 		add(buttonPanel, BorderLayout.SOUTH);
 	}
 
@@ -124,16 +131,31 @@ public class GameView extends JPanel {
 	private void initializePlayerPanel() {
 		// 캐릭터 관련 UI 요소
 		playerImageLabel = new JLabel(player.getCharacterImage());
-		playerInfoLabel = new JLabel("플레이어: " + player.getName() + " | 체력: " + player.getHealth());
+		playerImageLabel.setPreferredSize(new Dimension(300, 225));
+		playerImageLabel.setMaximumSize(new Dimension(300, 225));
+		playerImageLabel.setMinimumSize(new Dimension(300, 225));
+		playerImageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		playerImageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		playerInfoLabel = new JLabel("플레이어: " + player.getName());
+		playerInfoLabel.setPreferredSize(new Dimension(300, 40));
+		playerInfoLabel.setMaximumSize(new Dimension(300, 40));
+		playerInfoLabel.setMinimumSize(new Dimension(300, 40));
+		playerInfoLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		playerInfoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
 		playerHealthBar = new JProgressBar();
 		setupHealthBar(playerHealthBar, player.getHealth(), player.getMaxHealth());
+		playerHealthBar.setPreferredSize(new Dimension(300, 20));
+		playerHealthBar.setMaximumSize(new Dimension(300, 20));
+		playerHealthBar.setMinimumSize(new Dimension(300, 20));
+		playerHealthBar.setAlignmentX(Component.CENTER_ALIGNMENT);
 
 		// 인벤토리 패널 (독립적으로 관리)
 		inventoryPanel = new JPanel();
 		inventoryPanel.setLayout(new BoxLayout(inventoryPanel, BoxLayout.Y_AXIS));
 
 		JScrollPane scrollPane = new JScrollPane(inventoryPanel);
-		scrollPane.setPreferredSize(new Dimension(300, 200)); // 원하는 크기로 설정
+		scrollPane.setPreferredSize(new Dimension(300, 210)); // 원하는 크기로 설정
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		scrollPane.setBorder(BorderFactory.createTitledBorder("인벤토리"));
@@ -141,7 +163,7 @@ public class GameView extends JPanel {
 		inventoryPanel.setMaximumSize(new Dimension(300, Integer.MAX_VALUE));
 
 		playerLayeredPane = new JLayeredPane();
-		playerLayeredPane.setPreferredSize(new Dimension(300, 500));
+		playerLayeredPane.setPreferredSize(new Dimension(300, 540));
 
 		// 플레이어 패널 구성
 		playerPanel = new JPanel();
@@ -149,11 +171,11 @@ public class GameView extends JPanel {
 		playerPanel.add(playerInfoLabel);
 		playerPanel.add(playerHealthBar);
 		playerPanel.add(playerImageLabel);
-		playerPanel.setMaximumSize(new Dimension(300, 300));
+		playerPanel.setMaximumSize(new Dimension(300, 330));
 		playerPanel.setOpaque(false);
 
-		playerPanel.setBounds(0, 200, 300, 300);
-		scrollPane.setBounds(0, 0, 300, 200);
+		playerPanel.setBounds(0, 210, 300, 330);
+		scrollPane.setBounds(0, 0, 300, 210);
 
 		playerLayeredPane.add(playerPanel, JLayeredPane.DEFAULT_LAYER);
 		playerLayeredPane.add(scrollPane, JLayeredPane.DEFAULT_LAYER);
@@ -196,15 +218,31 @@ public class GameView extends JPanel {
 
 	private void initializeOpponentPanel() {
 		opponentImageLabel = new JLabel(new ImageIcon(getClass().getClassLoader().getResource("opponentImage.png")));
-		opponentInfoLabel = new JLabel("상대: " + opponent.getName() + " | 체력: " + opponent.getHealth());
+		opponentImageLabel.setPreferredSize(new Dimension(500, 470));
+		opponentImageLabel.setMaximumSize(new Dimension(500, 470));
+		opponentImageLabel.setMinimumSize(new Dimension(500, 470));
+		opponentImageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		opponentImageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+		opponentInfoLabel = new JLabel(opponent.getName());
+		opponentInfoLabel.setPreferredSize(new Dimension(500, 50));
+		opponentInfoLabel.setMaximumSize(new Dimension(500, 50));
+		opponentInfoLabel.setMinimumSize(new Dimension(500, 50));
+		opponentInfoLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		opponentInfoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
 		opponentHealthBar = new JProgressBar();
+		opponentHealthBar.setPreferredSize(new Dimension(500, 20));
+		opponentHealthBar.setMaximumSize(new Dimension(500, 20));
+		opponentHealthBar.setMinimumSize(new Dimension(500, 20));
+		opponentHealthBar.setAlignmentX(Component.CENTER_ALIGNMENT);
 
 		// 상대의 체력 바 설정
 		setupHealthBar(opponentHealthBar, opponent.getHealth(), opponent.getMaxHealth());
 
 		// 상대 패널 구성
 		opponentLayeredPane = new JLayeredPane();
-		opponentLayeredPane.setPreferredSize(new Dimension(500, 500));
+		opponentLayeredPane.setPreferredSize(new Dimension(500, 540));
 
 		opponentPanel = new JPanel();
 		opponentPanel.setLayout(new BoxLayout(opponentPanel, BoxLayout.Y_AXIS));
@@ -212,7 +250,7 @@ public class GameView extends JPanel {
 		opponentPanel.add(opponentHealthBar);
 		opponentPanel.add(opponentImageLabel);
 		// opponent 패널 크기와 위치 설정
-		opponentPanel.setBounds(0, 0, 500, 500);
+		opponentPanel.setBounds(0, 0, 500, 540);
 		// 기본 레이어에 opponent 패널 추가
 		opponentLayeredPane.add(opponentPanel, JLayeredPane.DEFAULT_LAYER);
 		// 메인 레이아웃에 레이어드 패널 추가
@@ -226,47 +264,50 @@ public class GameView extends JPanel {
 		healthBar.setStringPainted(true);
 	}
 
-	private void handleAttackButton() {
+	private void handleAttackButton(boolean is_attack) {
 		if (!isPlayerTurn) {
 			JOptionPane.showMessageDialog(this, "상대의 턴입니다. 기다려 주세요.", "알림", JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
 
-		int damage = player.getAttackPower() + random.nextInt(50);
-		int finalDamage = opponent.takeDamage(damage, false);
+		if (is_attack) {
+			int damage = player.getAttackPower() + random.nextInt(50);
+			int finalDamage = opponent.takeDamage(damage, false);
 
-		showAttackEffect();
-		showAttackDamage(finalDamage);
-
-		updateOpponentInfo();
-
-		if (opponent.getHealth() <= 0) {
-			// 승리 이펙트
-			disableAllButtons();
-			homeButton.setEnabled(false);
-			nextButton.setEnabled(true);
+			showAttackEffect();
+			showAttackDamage(finalDamage);
 		} else {
-			endPlayerTurn();
+			int damage = player.getSpecialAttackPower() + random.nextInt(50);
+			int finalDamage = opponent.takeDamage(damage, true);
+
+			showSpecialAttackEffect();
+			showAttackDamage(finalDamage);
 		}
-	}
-
-	private void handleSkillAttackButton() {
-		if (!isPlayerTurn) {
-			JOptionPane.showMessageDialog(this, "상대의 턴입니다. 기다려 주세요.", "알림", JOptionPane.INFORMATION_MESSAGE);
-			return;
-		}
-		int damage = player.getSpecialAttackPower() + random.nextInt(50);
-		int finalDamage = opponent.takeDamage(damage, true);
-
-		showSpecialAttackEffect();
-		showAttackDamage(finalDamage);
-
+		flashEffect(false);
 		updateOpponentInfo();
+
 		if (opponent.getHealth() <= 0) {
-			// 승리 이펙트
 			disableAllButtons();
 			homeButton.setEnabled(false);
-			nextButton.setEnabled(true);
+			// 0.5초 딜레이
+			Timer timer = new Timer(500, new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					hideOpponentWithAnimation();
+					Timer timer2 = new Timer(1000, new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							nextButton.setEnabled(true);
+							((Timer) e.getSource()).stop();
+						}
+					});
+					timer2.setRepeats(false);
+					timer2.start();
+					((Timer) e.getSource()).stop();
+				}
+			});
+			timer.setRepeats(false);
+			timer.start();
 		} else {
 			endPlayerTurn();
 		}
@@ -277,7 +318,7 @@ public class GameView extends JPanel {
 		JPanel damagePanel = new JPanel();
 		damagePanel.setLayout(null);
 		damagePanel.setOpaque(false); // 패널 배경 투명하게
-		damagePanel.setBounds(0, 0, 500, 500);
+		damagePanel.setBounds(0, 0, 500, 540);
 
 		JLabel damageLabel = new JLabel(String.valueOf(finalDamage));
 		damageLabel.setFont(new Font("Arial", Font.BOLD, 32));
@@ -286,7 +327,7 @@ public class GameView extends JPanel {
 		int labelWidth = 100;
 		int labelHeight = 30;
 		int x = (500 - labelWidth) / 2;
-		int y = 500 / 2;
+		int y = 540 / 2;
 		damageLabel.setBounds(x, y, labelWidth, labelHeight);
 
 		damagePanel.add(damageLabel);
@@ -309,7 +350,7 @@ public class GameView extends JPanel {
 		JPanel damagePanel = new JPanel();
 		damagePanel.setLayout(null);
 		damagePanel.setOpaque(false); // 패널 배경 투명하게
-		damagePanel.setBounds(0, 150, 300, 300);
+		damagePanel.setBounds(0, 155, 300, 330);
 
 		JLabel damageLabel = new JLabel(String.valueOf(num));
 		damageLabel.setFont(new Font("Arial", Font.BOLD, 32));
@@ -321,7 +362,7 @@ public class GameView extends JPanel {
 		int labelWidth = 100;
 		int labelHeight = 30;
 		int x = (300 - labelWidth) / 2;
-		int y = 300 / 2;
+		int y = 330 / 2;
 		damageLabel.setBounds(x, y, labelWidth, labelHeight);
 
 		damagePanel.add(damageLabel);
@@ -401,7 +442,7 @@ public class GameView extends JPanel {
 				if (currentX >= endX) {
 					moveTimer.stop();
 					// 이펙트 제거 타이머 시작
-					Timer removeTimer = new javax.swing.Timer(300, (evt) -> {
+					Timer removeTimer = new javax.swing.Timer(50, (evt) -> {
 						opponentLayeredPane.remove(effectPanel);
 						opponentLayeredPane.repaint();
 						((Timer) evt.getSource()).stop();
@@ -421,10 +462,10 @@ public class GameView extends JPanel {
 
 		JPanel effectPanel = new JPanel(null);
 		effectPanel.setOpaque(false);
-		effectPanel.setBounds(0, 200, 300, 300);
+		effectPanel.setBounds(0, 210, 300, 330);
 
 		int effectX = (300 - effectGif.getIconWidth()) / 2;
-		int effectY = (300 - effectGif.getIconHeight()) / 2;
+		int effectY = (330 - effectGif.getIconHeight()) / 2;
 		effectLabel.setBounds(effectX, effectY, effectGif.getIconWidth(), effectGif.getIconHeight());
 
 		effectPanel.add(effectLabel);
@@ -475,6 +516,51 @@ public class GameView extends JPanel {
 		endPlayerTurn();
 	}
 
+	private void flashEffect(boolean is_player) {
+		JLabel targetLabel = is_player ? playerImageLabel : opponentImageLabel;
+		ImageIcon originalIcon = (ImageIcon) targetLabel.getIcon();
+		BufferedImage bufferedImage = new BufferedImage(originalIcon.getIconWidth(), originalIcon.getIconHeight(),
+				BufferedImage.TYPE_INT_ARGB);
+
+		Timer timer = new Timer(50, new ActionListener() {
+			private int count = 0;
+			private final int maxCount = 6;
+			private boolean increasing = false;
+			private float alpha = 1.0f;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (increasing) {
+					alpha += 0.5f;
+					if (alpha >= 1.0f) {
+						alpha = 1.0f;
+						increasing = false;
+						count++;
+					}
+				} else {
+					alpha -= 0.5f;
+					if (alpha <= 0.3f) {
+						alpha = 0.3f;
+						increasing = true;
+					}
+				}
+
+				Graphics2D g2d = bufferedImage.createGraphics();
+				g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+				g2d.drawImage(originalIcon.getImage(), 0, 0, null);
+				g2d.dispose();
+
+				targetLabel.setIcon(new ImageIcon(bufferedImage));
+
+				if (count >= maxCount) {
+					((Timer) e.getSource()).stop();
+					targetLabel.setIcon(originalIcon);
+				}
+			}
+		});
+		timer.start();
+	}
+
 	private void endPlayerTurn() {
 		isPlayerTurn = false;
 		disableAllButtons();
@@ -483,7 +569,7 @@ public class GameView extends JPanel {
 	}
 
 	private void scheduleOpponentTurn() {
-		javax.swing.Timer timer = new javax.swing.Timer(2000, (ActionEvent e) -> {
+		javax.swing.Timer timer = new javax.swing.Timer(1500, (ActionEvent e) -> {
 			int damage = opponent.getAttackPower() + random.nextInt(20) + 5;
 
 			if (isPlayerDefending) {
@@ -493,6 +579,7 @@ public class GameView extends JPanel {
 			} else {
 				int finalDamage = player.takeDamage(damage, false);
 				showPlayerEffect("opponentAttackEffect.gif");
+				flashEffect(true);
 				showTakeDamageHeal(finalDamage, true);
 				updatePlayerInfo();
 
@@ -501,8 +588,15 @@ public class GameView extends JPanel {
 					return;
 				}
 			}
-
-			startPlayerTurn();
+			Timer timer2 = new Timer(500, new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					startPlayerTurn();
+					((Timer) e.getSource()).stop();
+				}
+			});
+			timer2.setRepeats(false);
+			timer2.start();
 			((Timer) e.getSource()).stop(); // 타이머 중지
 		});
 
@@ -523,7 +617,29 @@ public class GameView extends JPanel {
 		turnCountLabel.setText("턴 수: " + turnCount);
 	}
 
+	private void hideOpponentWithAnimation() {
+		final int originalY = opponentImageLabel.getY(); // 현재 Y 위치 저장
+		final int targetY = opponentPanel.getHeight(); // 목표 Y 위치 (패널 아래)
+
+		Timer timer = new Timer(16, new ActionListener() { // 약 60fps로 부드러운 애니메이션
+			int currentY = originalY;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				currentY += 30; // 이동 속도 조절
+				opponentImageLabel.setLocation(opponentImageLabel.getX(), currentY);
+
+				if (currentY >= targetY) {
+					((Timer) e.getSource()).stop();
+					opponentImageLabel.setVisible(false);
+				}
+			}
+		});
+		timer.start();
+	}
+
 	private void nextStage() {
+		nextButton.setEnabled(false);
 		if (!gameController.isLastStage()) {
 			gameController.nextStage();
 			currentStage = gameController.getCurrentStage();
@@ -533,22 +649,64 @@ public class GameView extends JPanel {
 			updateOpponentInfo();
 			updateStage(gameController.getCurrentStage());
 			updateOpponentImage();
-			startPlayerTurn();
 
-			if (gameController.isBossMonster()) {
-				// 보스 등장 이펙트 구현
-			}
+			// 0.5초 딜레이
+			Timer timer = new Timer(500, new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					startPlayerTurn();
+					((Timer) e.getSource()).stop();
+				}
+			});
+			timer.setRepeats(false);
+			timer.start();
 		} else {
 			endGame();
 		}
 	}
 
 	private void updateOpponentImage() {
+		ImageIcon icon;
 		if (gameController.isBossMonster()) {
-			opponentImageLabel.setIcon(new ImageIcon(getClass().getClassLoader().getResource("bossImage.png")));
+			icon = new ImageIcon(getClass().getClassLoader().getResource("bossImage.png"));
 		} else {
-			opponentImageLabel.setIcon(new ImageIcon(getClass().getClassLoader().getResource("opponentImage.png")));
+			icon = new ImageIcon(getClass().getClassLoader().getResource("opponentImage.png"));
 		}
+		opponentImageLabel.setLocation(opponentImageLabel.getX(), opponentPanel.getHeight() / 2);
+
+		BufferedImage bufferedImage = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(),
+				BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g2d = bufferedImage.createGraphics();
+		g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.0f));
+		g2d.drawImage(icon.getImage(), 0, 0, null);
+		opponentImageLabel.setIcon(new ImageIcon(bufferedImage));
+
+		opponentImageLabel.setVisible(true);
+
+		opponentPanel.revalidate();
+		opponentPanel.repaint();
+
+		Timer timer = new Timer(70, new ActionListener() {
+			float alpha = 0.0f;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				alpha += 0.1f;
+				if (alpha >= 1.0f) {
+					alpha = 1.0f;
+					((Timer) e.getSource()).stop();
+				}
+
+				// 알파 합성 규칙 설정
+				g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+				g2d.drawImage(icon.getImage(), 0, 0, null);
+
+				// 새로운 이미지 아이콘 생성 및 설정
+				ImageIcon newIcon = new ImageIcon(bufferedImage);
+				opponentImageLabel.setIcon(newIcon);
+			}
+		});
+		timer.start();
 	}
 
 	private void updatePlayerInfo() {
@@ -558,7 +716,7 @@ public class GameView extends JPanel {
 	}
 
 	private void updateOpponentInfo() {
-		opponentInfoLabel.setText("상대: " + opponent.getName());
+		opponentInfoLabel.setText(opponent.getName());
 		setupHealthBar(opponentHealthBar, opponent.getHealth(), opponent.getMaxHealth());
 	}
 
@@ -575,6 +733,7 @@ public class GameView extends JPanel {
 	}
 
 	private void endGame() {
+		// 게임 클리어 이펙트
 		returnToHome();
 	}
 
