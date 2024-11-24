@@ -304,16 +304,19 @@ public class GameView extends JPanel {
 		timer.start();
 	}
 
-	private void showtakeDamage(int finalDamage) {
+	private void showTakeDamageHeal(int num, boolean is_Damage) {
 		// 데미지 표시를 위한 JPanel 생성
 		JPanel damagePanel = new JPanel();
 		damagePanel.setLayout(null);
 		damagePanel.setOpaque(false); // 패널 배경 투명하게
 		damagePanel.setBounds(0, 150, 300, 300);
 
-		JLabel damageLabel = new JLabel(String.valueOf(finalDamage));
+		JLabel damageLabel = new JLabel(String.valueOf(num));
 		damageLabel.setFont(new Font("Arial", Font.BOLD, 32));
-		damageLabel.setForeground(new Color(255, 0, 255));
+		if (is_Damage)
+			damageLabel.setForeground(new Color(255, 0, 255));
+		else
+			damageLabel.setForeground(new Color(0, 255, 0));
 
 		int labelWidth = 100;
 		int labelHeight = 30;
@@ -356,7 +359,7 @@ public class GameView extends JPanel {
 		// 이펙트 패널을 팝업 레이어에 추가
 		opponentLayeredPane.add(effectPanel, JLayeredPane.POPUP_LAYER);
 
-		Timer timer = new javax.swing.Timer(700, (ActionEvent e) -> {
+		Timer timer = new javax.swing.Timer(600, (ActionEvent e) -> {
 			opponentLayeredPane.remove(effectPanel);
 			opponentLayeredPane.repaint();
 			((Timer) e.getSource()).stop();
@@ -412,34 +415,8 @@ public class GameView extends JPanel {
 		moveTimer.start();
 	}
 
-	private void showDefendEffect() {
-		ImageIcon effectGif = new ImageIcon(getClass().getClassLoader().getResource("guard.gif"));
-		JLabel effectLabel = new JLabel(effectGif);
-
-		JPanel effectPanel = new JPanel(null);
-		effectPanel.setOpaque(false);
-		effectPanel.setBounds(0, 200, 300, 300);
-
-		int effectX = (300 - effectGif.getIconWidth()) / 2;
-		int effectY = (300 - effectGif.getIconHeight()) / 2;
-		effectLabel.setBounds(effectX, effectY, effectGif.getIconWidth(), effectGif.getIconHeight());
-
-		effectPanel.add(effectLabel);
-
-		// 이펙트 패널을 팝업 레이어에 추가
-		playerLayeredPane.add(effectPanel, JLayeredPane.POPUP_LAYER);
-
-		Timer timer = new javax.swing.Timer(700, (ActionEvent e) -> {
-			playerLayeredPane.remove(effectPanel);
-			playerLayeredPane.repaint();
-			((Timer) e.getSource()).stop();
-		});
-		timer.setRepeats(false);
-		timer.start();
-	}
-
-	private void showOpponentAttackEffect() {
-		ImageIcon effectGif = new ImageIcon(getClass().getClassLoader().getResource("opponentAttackEffect.gif"));
+	private void showPlayerEffect(String filename) {
+		ImageIcon effectGif = new ImageIcon(getClass().getClassLoader().getResource(filename));
 		JLabel effectLabel = new JLabel(effectGif);
 
 		JPanel effectPanel = new JPanel(null);
@@ -469,14 +446,14 @@ public class GameView extends JPanel {
 			int healAmount = 30;
 			int actualHeal = Math.min(healAmount, player.getMaxHealth() - player.getHealth());
 			player.heal(actualHeal);
-			// 체력 회복 이펙트
+			showTakeDamageHeal(actualHeal, false);
 			updatePlayerInfo();
 		} else if ("공격력 증가 물약".equals(item.getName())) {
 			player.increaseAttackPower(10);
-			// 공격력 증가 이펙트
+			showPlayerEffect("abilityIncrease.gif");
 		} else if ("방어력 증가 물약".equals(item.getName())) {
 			player.increaseDefencePower(10);
-			// 방어력 증가 이펙트 구현
+			showPlayerEffect("abilityIncrease.gif");
 		}
 
 		// 아이템 수량 감소 및 버튼 제거
@@ -510,13 +487,13 @@ public class GameView extends JPanel {
 			int damage = opponent.getAttackPower() + random.nextInt(20) + 5;
 
 			if (isPlayerDefending) {
-				showDefendEffect();
-				showtakeDamage(0);
+				showPlayerEffect("guard.gif");
+				showTakeDamageHeal(0, true);
 				isPlayerDefending = false;
 			} else {
 				int finalDamage = player.takeDamage(damage, false);
-				showOpponentAttackEffect();
-				showtakeDamage(finalDamage);
+				showPlayerEffect("opponentAttackEffect.gif");
+				showTakeDamageHeal(finalDamage, true);
 				updatePlayerInfo();
 
 				if (player.getHealth() <= 0) {

@@ -32,7 +32,7 @@ public class CharacterView extends JPanel {
 		add(playerInfoLabel, BorderLayout.NORTH);
 
 		// 캐릭터 패널 생성
-		characterPanel = new JPanel(new GridLayout(0, 1, 10, 10));
+		characterPanel = new JPanel(new GridLayout(0, 2, 10, 10));
 		characterPanel.setOpaque(false);
 
 		// MyCharacter에서 캐릭터 목록 가져오기
