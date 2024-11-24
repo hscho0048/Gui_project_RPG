@@ -155,6 +155,47 @@ public class UserController {
 			return false;
 		}
 	}
+	
+	// 유저의 골드를 업데이트
+	public boolean updateGold(int userId, int goldChange) {
+	    String query = "UPDATE users SET money = money + ? WHERE id = ?";
+	    try (PreparedStatement stmt = connection.prepareStatement(query)) {
+	        stmt.setInt(1, goldChange); // 골드 증가/감소 값 설정
+	        stmt.setInt(2, userId); // 사용자 ID 설정
+
+	        int rowsUpdated = stmt.executeUpdate();
+	        if (rowsUpdated > 0) {
+	            System.out.println("골드가 업데이트되었습니다. 변경된 금액: " + goldChange);
+	            return true; // 성공 시 true 반환
+	        } else {
+	            System.out.println("골드 업데이트 실패: User ID not found.");
+	            return false; // 실패 시 false 반환
+	        }
+	    } catch (SQLException e) {
+	        System.err.println("골드 업데이트 중 오류 발생: " + e.getMessage());
+	        return false; // 예외 발생 시 false 반환
+	    }
+	}
+
+	// 특정 유저의 현재 골드 조회
+	public int getGold(int userId) {
+	    String query = "SELECT money FROM users WHERE id = ?";
+	    try (PreparedStatement stmt = connection.prepareStatement(query)) {
+	        stmt.setInt(1, userId); // 사용자 ID 설정
+
+	        ResultSet rs = stmt.executeQuery();
+	        if (rs.next()) {
+	            return rs.getInt("money"); // 현재 골드 반환
+	        } else {
+	            System.out.println("사용자를 찾을 수 없습니다: User ID not found.");
+	            return -1; // 실패 시 -1 반환
+	        }
+	    } catch (SQLException e) {
+	        System.err.println("골드 조회 중 오류 발생: " + e.getMessage());
+	        return -1; // 예외 발생 시 -1 반환
+	    }
+	}
+
 
 	// 점수 업데이트 메서드: 게임이 끝날 때 턴 수로 점수를 업데이트
 	public void updateTurns(int userId, int turnCount) {

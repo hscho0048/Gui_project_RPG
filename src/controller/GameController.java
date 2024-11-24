@@ -53,6 +53,7 @@ public class GameController {
 	// 다음 스테이지로 전환
 	public void nextStage() {
 		if (currentStage < MAX_STAGE) {
+			
 			currentStage++;
 
 			if (currentStage == 10) {
@@ -101,4 +102,6 @@ public class GameController {
 	public Opponent getOpponent() {
 		return opponent;
 	}
+	
+
 }

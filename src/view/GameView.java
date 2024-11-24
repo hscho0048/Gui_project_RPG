@@ -18,7 +18,7 @@ public class GameView extends JPanel {
 	private HomeView homeView; // HomeView 참조
 	private ShopView shopView; // ShopView 참조
 	private JLabel playerImageLabel, opponentImageLabel;
-	private JLabel playerInfoLabel, opponentInfoLabel, stageLabel;
+	private JLabel playerInfoLabel, opponentInfoLabel, stageLabel, goldLabel;
 	private JProgressBar playerHealthBar, opponentHealthBar;
 	private JButton attackButton, skillAttackButton, defendButton, nextButton, homeButton;
 	private JPanel playerPanel, opponentPanel;
@@ -79,10 +79,17 @@ public class GameView extends JPanel {
 		turnCountLabel = new JLabel("턴 수: " + turnCount);
 		turnCountLabel.setFont(new Font("Serif", Font.PLAIN, 16));
 		turnCountLabel.setHorizontalAlignment(SwingConstants.LEFT);
+		
+		 // 골드 레이블 초기화
+	    goldLabel = new JLabel("골드: " + player.getMoney());
+	    goldLabel.setFont(new Font("Serif", Font.PLAIN, 16));
+	    goldLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+	    
 
 		// 상단 패널 구성
 		topPanel.add(stageLabel, BorderLayout.CENTER);
 		topPanel.add(turnCountLabel, BorderLayout.WEST);
+		topPanel.add(goldLabel, BorderLayout.EAST);
 
 		// 전체 레이아웃에 상단 패널 추가
 		add(topPanel, BorderLayout.NORTH);
@@ -545,6 +552,10 @@ public class GameView extends JPanel {
 	private void updateTurnCountLabel() {
 		turnCountLabel.setText("턴 수: " + turnCount);
 	}
+	private void updateTotalGold() {
+		updateGold();
+		goldLabel.setText("골드: " + player.getMoney());
+	}
 
 	private void nextStage() {
 		if (!gameController.isLastStage()) {
@@ -554,6 +565,7 @@ public class GameView extends JPanel {
 
 			updatePlayerInfo();
 			updateOpponentInfo();
+			updateTotalGold();
 			updateStage(gameController.getCurrentStage());
 			updateOpponentImage();
 			startPlayerTurn();
@@ -583,6 +595,17 @@ public class GameView extends JPanel {
 	private void updateOpponentInfo() {
 		opponentInfoLabel.setText("상대: " + opponent.getName());
 		setupHealthBar(opponentHealthBar, opponent.getHealth(), opponent.getMaxHealth());
+	}
+	public void updateGold() {
+	    int stageBonus = currentStage * 50; // 스테이지에 따른 보상 증가
+	    player.increaseMoney(stageBonus); // 플레이어의 골드 증가
+	    boolean updateSuccess = userController.updateGold(player.getId(), stageBonus);
+	    if (updateSuccess) {
+	        System.out.println("골드가 성공적으로 저장되었습니다.");
+	    } else {
+	        System.out.println("골드 저장 실패.");
+	    }
+	    System.out.println(stageBonus+"골드 획득! 현재 골드: " + player.getMoney());
 	}
 
 	private void updateStage(int stage) {
