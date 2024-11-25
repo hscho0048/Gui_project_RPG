@@ -9,11 +9,13 @@ import java.util.List;
 import model.Item;
 import model.Player;
 import model.Shop;
+import util.PopupLabelUtil;
 import util.UIUtils;
 
 public class ShopView extends JPanel {
 	private Player player;
 	private JLabel playerInfoLabel;
+	private JLayeredPane layeredPane;
 	private JPanel itemPanel;
 	private JPanel inventoryPanel; // 인벤토리 패널
 	private JButton buyButton;
@@ -32,24 +34,44 @@ public class ShopView extends JPanel {
 		this.gameView = gameView; // GameView 초기화
 		this.mainFrame = mainFrame;
 		this.shop = new Shop();
-		Font font = new Font("Default", Font.BOLD, 15);
 
 		int updatedGold = userController.getGold(player.getId());
 		if (updatedGold != -1) {
 			player.setMoney(updatedGold); // 데이터베이스 값으로 갱신
 		}
 
+		// 전체 레이아웃 초기화
+		setLayout(new BorderLayout());
+
+		layeredPane = new JLayeredPane();
+		layeredPane.setPreferredSize(new Dimension(800, 600));
+
+		// UI 초기화 메서드 호출
+		initializeUI();
+
+		add(layeredPane);
+
+	}
+
+	private void initializeUI() {
+		Font font = new Font("Default", Font.BOLD, 15);
+
 		// 플레이어 정보
+		JPanel topPanel = new JPanel();
 		playerInfoLabel = new JLabel("플레이어: " + player.getName() + " | 금액: " + player.getMoney());
 		playerInfoLabel.setFont(font);
-		add(playerInfoLabel, BorderLayout.NORTH);
+		topPanel.add(playerInfoLabel);
+		topPanel.setBounds(0, 0, 800, 50);
+		layeredPane.add(topPanel, JLayeredPane.DEFAULT_LAYER);
 
-		// 인벤토리
+		// 인벤토리 패널
 		inventoryPanel = new JPanel();
 		inventoryPanel.setLayout(new BoxLayout(inventoryPanel, BoxLayout.Y_AXIS)); // 개별적으로 BoxLayout 설정
 		inventoryPanel.setBorder(BorderFactory.createTitledBorder("인벤토리"));
+		JScrollPane inventoryScrollPane = new JScrollPane(inventoryPanel);
+		inventoryScrollPane.setBounds(0, 50, 200, 450);
 		updateInventoryPanel();
-		add(new JScrollPane(inventoryPanel), BorderLayout.WEST); // 스크롤 추가
+		layeredPane.add(inventoryScrollPane, JLayeredPane.DEFAULT_LAYER);
 
 		// 아이템 패널
 		itemPanel = new JPanel(new GridLayout(0, 3, 10, 10));
@@ -60,34 +82,28 @@ public class ShopView extends JPanel {
 				JButton itemButton = createItemButton(item);
 				itemPanel.add(itemButton);
 			}
-		} else {
-			JOptionPane.showMessageDialog(this, "상점에 아이템이 없습니다.", "오류", JOptionPane.ERROR_MESSAGE);
 		}
-		add(new JScrollPane(itemPanel), BorderLayout.CENTER);
+		JScrollPane itemScrollPane = new JScrollPane(itemPanel);
+		itemScrollPane.setBounds(220, 50, 560, 450);
+		layeredPane.add(itemScrollPane, JLayeredPane.DEFAULT_LAYER);
 
 		// 버튼 패널
+		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		buyButton = new JButton("구매");
 		buyButton.addActionListener(e -> handleBuyItem());
 
 		backButton = new JButton("홈으로");
 		backButton.addActionListener(e -> handleBack());
-
-		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 		buttonPanel.add(buyButton);
 		buttonPanel.add(backButton);
-
-		add(buttonPanel, BorderLayout.SOUTH);
-		// 전체 레이아웃 초기화
-		setLayout(new BorderLayout());
-
-		// UI 초기화 메서드 호출
-		initializeUI();
-
+		buttonPanel.setBounds(0, 500, 800, 50);
+		layeredPane.add(buttonPanel, JLayeredPane.DEFAULT_LAYER);
 	}
 
 	private JButton createItemButton(Item item) {
 		JButton itemButton = new JButton(
-				"<html><center>" + item.getName() + "<br>가격: " + item.getPrice() + "</center></html>", item.getImage());
+				"<html><center>" + item.getName() + "<br>" + item.getPrice() + "골드" + "</center></html>",
+				item.getImage());
 		itemButton.setVerticalTextPosition(SwingConstants.BOTTOM);
 		itemButton.setHorizontalTextPosition(SwingConstants.CENTER);
 		itemButton.setFont(new Font("Default", Font.BOLD, 16));
@@ -141,16 +157,17 @@ public class ShopView extends JPanel {
 					updatePlayerInfo();
 					updateInventoryPanel();
 					userController.recordPurchase(player.getId(), selectedItem.getName()); // 구매 기록 저장
-					JOptionPane.showMessageDialog(this, selectedItem.getName() + "을(를) 구매했습니다!");
+					PopupLabelUtil.showPopupLabel(layeredPane, selectedItem.getName() + "을(를) 구매했습니다!",
+							"successSymbol.png");
 				} else {
-					JOptionPane.showMessageDialog(this, "데이터베이스 업데이트 실패!", "오류", JOptionPane.ERROR_MESSAGE);
+					PopupLabelUtil.showPopupLabel(this, "데이터베이스 업데이트 실패", "failSymbol.png");
 				}
 
 			} else {
-				JOptionPane.showMessageDialog(this, "돈이 부족합니다.", "오류", JOptionPane.ERROR_MESSAGE);
+				PopupLabelUtil.showPopupLabel(layeredPane, "골드가 부족합니다.", "failSymbol.png");
 			}
 		} else {
-			JOptionPane.showMessageDialog(this, "아이템을 선택해주세요.", "오류", JOptionPane.ERROR_MESSAGE);
+			PopupLabelUtil.showPopupLabel(layeredPane, "아이템을 선택하세요.", "failSymbol.png");
 		}
 	}
 
@@ -187,49 +204,6 @@ public class ShopView extends JPanel {
 		playerInfoLabel.setText("플레이어: " + player.getName() + " | 금액: " + player.getMoney());
 		revalidate();
 		repaint();
-	}
-
-	private void initializeUI() {
-		Font font = new Font("Default", Font.BOLD, 15);
-
-		// 플레이어 정보
-		playerInfoLabel = new JLabel("플레이어: " + player.getName() + " | 금액: " + player.getMoney());
-		playerInfoLabel.setFont(font);
-		add(playerInfoLabel, BorderLayout.NORTH);
-
-		// 인벤토리 패널
-		inventoryPanel = new JPanel();
-		inventoryPanel.setLayout(new BoxLayout(inventoryPanel, BoxLayout.Y_AXIS)); // 개별적으로 BoxLayout 설정
-		inventoryPanel.setBorder(BorderFactory.createTitledBorder("인벤토리"));
-		updateInventoryPanel();
-		add(new JScrollPane(inventoryPanel), BorderLayout.WEST); // 스크롤 추가
-
-		// 아이템 패널
-		itemPanel = new JPanel(new GridLayout(0, 2, 10, 10));
-		itemPanel.setOpaque(false);
-		List<Item> items = shop.getItem();
-		if (items != null && !items.isEmpty()) {
-			for (Item item : items) {
-				JButton itemButton = createItemButton(item);
-				itemPanel.add(itemButton);
-			}
-		} else {
-			JOptionPane.showMessageDialog(this, "상점에 아이템이 없습니다.", "오류", JOptionPane.ERROR_MESSAGE);
-		}
-		add(new JScrollPane(itemPanel), BorderLayout.CENTER);
-
-		// 버튼 패널
-		buyButton = new JButton("구매");
-		buyButton.addActionListener(e -> handleBuyItem());
-
-		backButton = new JButton("홈으로");
-		backButton.addActionListener(e -> handleBack());
-
-		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-		buttonPanel.add(buyButton);
-		buttonPanel.add(backButton);
-
-		add(buttonPanel, BorderLayout.SOUTH);
 	}
 
 	private void handleBack() {

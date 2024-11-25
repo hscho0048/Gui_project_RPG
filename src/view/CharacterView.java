@@ -5,6 +5,8 @@ import java.awt.*;
 import model.Character;
 import model.MyCharacter;
 import model.Player;
+import util.PopupLabelUtil;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -12,6 +14,7 @@ public class CharacterView extends JPanel {
 	private Player player;
 	private JButton selectButton;
 	private JButton backButton;
+	private JLayeredPane layeredPane;
 	private JLabel playerInfoLabel;
 	private JPanel characterPanel;
 	private MyCharacter myCharacter;
@@ -24,17 +27,24 @@ public class CharacterView extends JPanel {
 
 		setLayout(new BorderLayout());
 
+		// LayeredPane 초기화
+		layeredPane = new JLayeredPane();
+		layeredPane.setPreferredSize(new Dimension(800, 600));
+
 		Font font = new Font("Default", Font.BOLD, 15);
 
 		// 플레이어 정보
 		playerInfoLabel = new JLabel(
 				"플레이어: " + player.getName() + " | 직업: " + (player.isJobEmpty() ? "없음" : player.getCharacterName()));
 		playerInfoLabel.setFont(font);
-		add(playerInfoLabel, BorderLayout.NORTH);
+		playerInfoLabel.setBounds(0, 0, 800, 50);
+
+		layeredPane.add(playerInfoLabel, JLayeredPane.DEFAULT_LAYER);
 
 		// 캐릭터 패널 생성
 		characterPanel = new JPanel(new GridLayout(0, 2, 10, 10));
 		characterPanel.setOpaque(false);
+		characterPanel.setBounds(0, 50, 800, 450);
 
 		// MyCharacter에서 캐릭터 목록 가져오기
 		List<Character> characters = myCharacter.getCharacter();
@@ -44,10 +54,10 @@ public class CharacterView extends JPanel {
 				characterPanel.add(characterButton);
 			}
 		} else {
-			JOptionPane.showMessageDialog(this, "캐릭터 목록이 비어있습니다.", "오류", JOptionPane.ERROR_MESSAGE);
+			PopupLabelUtil.showPopupLabel(this, "캐릭터 목록이 비어있습니다.", "failSymbol.png");
 		}
 
-		add(characterPanel, BorderLayout.CENTER);
+		layeredPane.add(characterPanel, JLayeredPane.DEFAULT_LAYER);
 
 		// 선택 버튼 추가
 		selectButton = new JButton("선택");
@@ -57,11 +67,16 @@ public class CharacterView extends JPanel {
 		backButton.addActionListener(e -> handleBack());
 
 		JPanel buttonPanel = new JPanel();
-		buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+		buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 10));
+		selectButton.setPreferredSize(new Dimension(100, 40));
+		backButton.setPreferredSize(new Dimension(100, 40));
 		buttonPanel.add(selectButton);
 		buttonPanel.add(backButton);
+		buttonPanel.setBounds(0, 500, 800, 100);
 
-		add(buttonPanel, BorderLayout.SOUTH);
+		layeredPane.add(buttonPanel, JLayeredPane.DEFAULT_LAYER);
+
+		add(layeredPane);
 
 		setVisible(true);
 	}
@@ -73,7 +88,6 @@ public class CharacterView extends JPanel {
 		characterButton.setVerticalTextPosition(SwingConstants.BOTTOM); // 텍스트를 이미지 아래로 설정
 		characterButton.setHorizontalTextPosition(SwingConstants.CENTER); // 텍스트 가운데 정렬
 		characterButton.setFont(new Font("Default", Font.BOLD, 16));
-		characterButton.setPreferredSize(new Dimension(10, 50));
 
 		characterButton.setBackground(Color.WHITE);
 		characterButton.setOpaque(true);
@@ -123,13 +137,11 @@ public class CharacterView extends JPanel {
 					selectedCharacter.getImage());
 
 			updatePlayerInfo();
-
-			// 선택 성공 이펙트
-
+			PopupLabelUtil.showPopupLabel(this, player.getCharacterName() + "를 선택하였습니다.", "successSymbol.png");
 			updateCharacterInDatabase(selectedCharacter.getName()); // 캐릭터 이름을 DB에 업데이트
 			homeView.enableBattleButton();
 		} else {
-			JOptionPane.showMessageDialog(this, "캐릭터를 선택해주세요.", "오류", JOptionPane.ERROR_MESSAGE);
+			PopupLabelUtil.showPopupLabel(this, "캐릭터를 선택해주세요.", "failSymbol.png");
 		}
 	}
 
