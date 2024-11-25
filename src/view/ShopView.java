@@ -1,6 +1,7 @@
 package view;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 
 import controller.UserController;
 
@@ -57,25 +58,35 @@ public class ShopView extends JPanel {
 		Font font = new Font("Default", Font.BOLD, 15);
 
 		// 플레이어 정보
-		JPanel topPanel = new JPanel();
+		JPanel topPanel = new JPanel(new BorderLayout());
+		topPanel.setBounds(0, 0, 800, 50);
+
+		// 상점 타이틀
+		JLabel titleLabel = new JLabel("상점");
+		titleLabel.setFont(new Font("Dialog", Font.BOLD, 24));
+		titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		topPanel.add(titleLabel, BorderLayout.CENTER);
+
 		playerInfoLabel = new JLabel("플레이어: " + player.getName() + " | 금액: " + player.getMoney());
 		playerInfoLabel.setFont(font);
-		topPanel.add(playerInfoLabel);
-		topPanel.setBounds(0, 0, 800, 50);
+		playerInfoLabel.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0)); // 왼쪽 여백
+		topPanel.add(playerInfoLabel, BorderLayout.WEST);
 		layeredPane.add(topPanel, JLayeredPane.DEFAULT_LAYER);
 
 		// 인벤토리 패널
 		inventoryPanel = new JPanel();
 		inventoryPanel.setLayout(new BoxLayout(inventoryPanel, BoxLayout.Y_AXIS)); // 개별적으로 BoxLayout 설정
-		inventoryPanel.setBorder(BorderFactory.createTitledBorder("인벤토리"));
+		inventoryPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		JScrollPane inventoryScrollPane = new JScrollPane(inventoryPanel);
-		inventoryScrollPane.setBounds(0, 50, 200, 450);
+		inventoryScrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK),
+				"인벤토리", TitledBorder.CENTER, TitledBorder.TOP, new Font("Dialog", Font.BOLD, 16)));
+		inventoryScrollPane.setBounds(20, 70, 200, 430);
 		updateInventoryPanel();
 		layeredPane.add(inventoryScrollPane, JLayeredPane.DEFAULT_LAYER);
 
 		// 아이템 패널
-		itemPanel = new JPanel(new GridLayout(0, 3, 10, 10));
-		itemPanel.setOpaque(false);
+		itemPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+		itemPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		List<Item> items = shop.getItem();
 		if (items != null && !items.isEmpty()) {
 			for (Item item : items) {
@@ -84,15 +95,24 @@ public class ShopView extends JPanel {
 			}
 		}
 		JScrollPane itemScrollPane = new JScrollPane(itemPanel);
-		itemScrollPane.setBounds(220, 50, 560, 450);
+		itemScrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "상품 목록",
+				TitledBorder.CENTER, TitledBorder.TOP, new Font("Dialog", Font.BOLD, 16)));
+		itemScrollPane.setBounds(240, 70, 540, 430);
 		layeredPane.add(itemScrollPane, JLayeredPane.DEFAULT_LAYER);
 
 		// 버튼 패널
-		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+		buttonPanel.setBounds(0, 520, 800, 60);
+
+		Dimension buttonSize = new Dimension(100, 40);
 		buyButton = new JButton("구매");
+		buyButton.setPreferredSize(buttonSize);
+		buyButton.setFont(new Font("Dialog", Font.BOLD, 14));
 		buyButton.addActionListener(e -> handleBuyItem());
 
 		backButton = new JButton("홈으로");
+		backButton.setPreferredSize(buttonSize);
+		backButton.setFont(new Font("Dialog", Font.BOLD, 14));
 		backButton.addActionListener(e -> handleBack());
 		buttonPanel.add(buyButton);
 		buttonPanel.add(backButton);
@@ -101,16 +121,15 @@ public class ShopView extends JPanel {
 	}
 
 	private JButton createItemButton(Item item) {
-		JButton itemButton = new JButton(
-				"<html><center>" + item.getName() + "<br>" + item.getPrice() + "골드" + "</center></html>",
-				item.getImage());
+		JButton itemButton = new JButton("<html><center>" + item.getName() + "<br><font color='#B8860B'>"
+				+ item.getPrice() + " 골드</font></center></html>", item.getImage());
 		itemButton.setVerticalTextPosition(SwingConstants.BOTTOM);
 		itemButton.setHorizontalTextPosition(SwingConstants.CENTER);
-		itemButton.setFont(new Font("Default", Font.BOLD, 16));
-		itemButton.setPreferredSize(new Dimension(10, 50));
+		itemButton.setFont(new Font("Dialog", Font.BOLD, 14));
+		itemButton.setPreferredSize(new Dimension(150, 150));
 		itemButton.setBackground(Color.WHITE);
-		itemButton.setOpaque(true);
-		itemButton.setBorder(BorderFactory.createEmptyBorder());
+		itemButton.setFocusPainted(false);
+		itemButton.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
 		itemButton.putClientProperty("selected", false);
 
 		itemButton.addActionListener(e -> {

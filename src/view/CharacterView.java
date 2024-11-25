@@ -31,20 +31,30 @@ public class CharacterView extends JPanel {
 		layeredPane = new JLayeredPane();
 		layeredPane.setPreferredSize(new Dimension(800, 600));
 
-		Font font = new Font("Default", Font.BOLD, 15);
+		// 상단 패널 (타이틀 + 플레이어 정보)
+		JPanel topPanel = new JPanel(new BorderLayout());
+		topPanel.setBounds(0, 0, 800, 80);
 
-		// 플레이어 정보
+		// 타이틀
+		JLabel titleLabel = new JLabel("캐릭터 선택");
+		titleLabel.setFont(new Font("Dialog", Font.BOLD, 24));
+		titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		topPanel.add(titleLabel, BorderLayout.CENTER);
+
 		playerInfoLabel = new JLabel(
 				"플레이어: " + player.getName() + " | 직업: " + (player.isJobEmpty() ? "없음" : player.getCharacterName()));
-		playerInfoLabel.setFont(font);
-		playerInfoLabel.setBounds(0, 0, 800, 50);
+		playerInfoLabel.setFont(new Font("Dialog", Font.BOLD, 15));
 
-		layeredPane.add(playerInfoLabel, JLayeredPane.DEFAULT_LAYER);
+		playerInfoLabel.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
+		topPanel.add(playerInfoLabel, BorderLayout.SOUTH);
 
-		// 캐릭터 패널 생성
-		characterPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+		layeredPane.add(topPanel, JLayeredPane.DEFAULT_LAYER);
+
+		// 캐릭터 패널
+		characterPanel = new JPanel(new GridLayout(0, 2, 30, 30));
+		characterPanel.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50)); // 여백 추가
 		characterPanel.setOpaque(false);
-		characterPanel.setBounds(0, 50, 800, 450);
+		characterPanel.setBounds(0, 100, 800, 380);
 
 		// MyCharacter에서 캐릭터 목록 가져오기
 		List<Character> characters = myCharacter.getCharacter();
@@ -53,32 +63,37 @@ public class CharacterView extends JPanel {
 				JButton characterButton = createCharacterButton(character);
 				characterPanel.add(characterButton);
 			}
-		} else {
-			PopupLabelUtil.showPopupLabel(this, "캐릭터 목록이 비어있습니다.", "failSymbol.png");
 		}
 
 		layeredPane.add(characterPanel, JLayeredPane.DEFAULT_LAYER);
 
-		// 선택 버튼 추가
-		selectButton = new JButton("선택");
-		selectButton.addActionListener(e -> handleSelectCharacter());
-
-		backButton = new JButton("Home");
-		backButton.addActionListener(e -> handleBack());
-
+		// 버튼 패널
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 10));
-		selectButton.setPreferredSize(new Dimension(100, 40));
-		backButton.setPreferredSize(new Dimension(100, 40));
+		buttonPanel.setBounds(0, 500, 800, 100);
+
+		selectButton = new JButton("선택");
+		backButton = new JButton("홈으로");
+
+		Dimension buttonSize = new Dimension(120, 40);
+		Font buttonFont = new Font("Dialog", Font.BOLD, 14);
+
+		for (JButton button : new JButton[] { selectButton, backButton }) {
+			button.setPreferredSize(buttonSize);
+			button.setFont(buttonFont);
+			button.setFocusPainted(false);
+			button.setBorder(BorderFactory.createRaisedBevelBorder());
+		}
+
+		selectButton.addActionListener(e -> handleSelectCharacter());
+		backButton.addActionListener(e -> handleBack());
+
 		buttonPanel.add(selectButton);
 		buttonPanel.add(backButton);
-		buttonPanel.setBounds(0, 500, 800, 100);
 
 		layeredPane.add(buttonPanel, JLayeredPane.DEFAULT_LAYER);
 
 		add(layeredPane);
-
-		setVisible(true);
 	}
 
 	// 캐릭터 버튼 생성
@@ -88,10 +103,10 @@ public class CharacterView extends JPanel {
 		characterButton.setVerticalTextPosition(SwingConstants.BOTTOM); // 텍스트를 이미지 아래로 설정
 		characterButton.setHorizontalTextPosition(SwingConstants.CENTER); // 텍스트 가운데 정렬
 		characterButton.setFont(new Font("Default", Font.BOLD, 16));
-
+		characterButton.setPreferredSize(new Dimension(300, 150));
 		characterButton.setBackground(Color.WHITE);
 		characterButton.setOpaque(true);
-		characterButton.setBorder(BorderFactory.createEmptyBorder());
+		characterButton.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
 
 		// 선택 여부 관리
 		characterButton.putClientProperty("selected", false);

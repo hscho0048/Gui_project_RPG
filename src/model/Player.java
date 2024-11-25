@@ -194,7 +194,7 @@ public class Player {
 		// 이미 인벤토리에 있는 아이템인지 확인
 		for (Item existingItem : inventory) {
 			if (existingItem.getName().equals(item.getName())) {
-				existingItem.increaseQuantity(item.getQuantity()); // 수량 증가
+				existingItem.increaseQuantity(); // 수량 증가
 				itemExists = true;
 				break;
 			}
@@ -202,7 +202,7 @@ public class Player {
 
 		if (!itemExists) {
 			inventory.add(item); // 인벤토리에 추가
-			item.increaseQuantity(1);
+			item.increaseQuantity();
 		}
 		return true; // 구매 성공
 	}

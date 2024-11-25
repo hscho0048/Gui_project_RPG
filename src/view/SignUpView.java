@@ -18,34 +18,61 @@ public class SignUpView extends JPanel {
 		this.userController = userController;
 		this.mainFrame = mainFrame;
 
-		setLayout(new GridLayout(4, 2));
+		setPreferredSize(new Dimension(800, 600));
+		setLayout(null); // 절대 위치 사용
 
-		// ID 입력 필드
+		// 타이틀 라벨 생성 및 설정
+		JLabel titleLabel = new JLabel("회원가입");
+		titleLabel.setFont(new Font("Dialog", Font.BOLD, 24));
+		titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		// 타이틀을 중앙 패널 위쪽에 배치 (x: 250, y: 120)
+		titleLabel.setBounds(250, 120, 300, 40);
+		add(titleLabel);
+
+		// 중앙 패널 생성 (입력 필드와 버튼을 포함)
+		JPanel centerPanel = new JPanel();
+		centerPanel.setLayout(null); // 절대 위치 사용
+		centerPanel.setBounds(0, 0, 800, 600);
+
 		JLabel usernameLabel = new JLabel("아이디:");
-		usernameField = new JTextField(15);
+		usernameLabel.setFont(new Font("Dialog", Font.BOLD, 16));
+		usernameField = new JTextField();
+		usernameField.setFont(new Font("Dialog", Font.PLAIN, 14));
 
-		// 비밀번호 입력 필드
 		JLabel passwordLabel = new JLabel("비밀번호:");
-		passwordField = new JPasswordField(15);
+		passwordLabel.setFont(new Font("Dialog", Font.BOLD, 16));
+		passwordField = new JPasswordField();
+		passwordField.setFont(new Font("Dialog", Font.PLAIN, 14));
 
-		// 회원가입 버튼
 		signUpButton = new JButton("회원가입");
-		signUpButton.addActionListener(e -> signUp());
-
-		// 뒤로가기 버튼
+		signUpButton.setFont(new Font("Dialog", Font.BOLD, 14));
 		backButton = new JButton("뒤로가기");
+		backButton.setFont(new Font("Dialog", Font.BOLD, 14));
+
+		usernameLabel.setBounds(250, 180, 100, 30);
+		usernameField.setBounds(250, 210, 300, 40);
+
+		passwordLabel.setBounds(250, 270, 100, 30);
+		passwordField.setBounds(250, 300, 300, 40);
+
+		signUpButton.setBounds(250, 370, 140, 40);
+		backButton.setBounds(410, 370, 140, 40);
+
+		signUpButton.addActionListener(e -> signUp());
 		backButton.addActionListener(e -> {
 			CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
 			cardLayout.show(mainFrame.getContentPane(), "LoginView"); // LoginView로 전환
 		});
 
 		// 컴포넌트 추가
-		add(usernameLabel);
-		add(usernameField);
-		add(passwordLabel);
-		add(passwordField);
-		add(signUpButton);
-		add(backButton);
+		centerPanel.add(usernameLabel);
+		centerPanel.add(usernameField);
+		centerPanel.add(passwordLabel);
+		centerPanel.add(passwordField);
+		centerPanel.add(signUpButton);
+		centerPanel.add(backButton);
+
+		add(centerPanel, BorderLayout.CENTER);
 	}
 
 	private void signUp() {

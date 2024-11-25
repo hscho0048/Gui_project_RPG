@@ -27,29 +27,60 @@ public class LoginView extends JPanel {
 		this.userController = userController;
 		this.mainFrame = mainFrame;
 
-		setLayout(new GridLayout(3, 2));
+		setPreferredSize(new Dimension(800, 600));
+		setLayout(null); // 절대 위치 사용
+
+		// 타이틀 라벨 생성 및 설정
+		JLabel titleLabel = new JLabel("RPG 로그인");
+		titleLabel.setFont(new Font("Dialog", Font.BOLD, 24));
+		titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		// 타이틀을 중앙 패널 위쪽에 배치 (x: 250, y: 120)
+		titleLabel.setBounds(250, 120, 300, 40);
+		add(titleLabel);
+
+		JPanel centerPanel = new JPanel();
+		centerPanel.setLayout(null); // 절대 위치 사용
+		centerPanel.setBounds(0, 0, 800, 600);
 
 		JLabel usernameLabel = new JLabel("아이디:");
-		usernameField = new JTextField(15);
+		usernameLabel.setFont(new Font("Dialog", Font.BOLD, 16));
+		usernameField = new JTextField();
+		usernameField.setFont(new Font("Dialog", Font.PLAIN, 14));
 
 		JLabel passwordLabel = new JLabel("비밀번호:");
-		passwordField = new JPasswordField(15);
+		passwordLabel.setFont(new Font("Dialog", Font.BOLD, 16));
+		passwordField = new JPasswordField();
+		passwordField.setFont(new Font("Dialog", Font.PLAIN, 14));
 
 		loginButton = new JButton("로그인");
-		loginButton.addActionListener(e -> login());
-
+		loginButton.setFont(new Font("Dialog", Font.BOLD, 14));
 		signUpButton = new JButton("회원가입");
+		signUpButton.setFont(new Font("Dialog", Font.BOLD, 14));
+
+		usernameLabel.setBounds(250, 180, 100, 30);
+		usernameField.setBounds(250, 210, 300, 40);
+
+		passwordLabel.setBounds(250, 270, 100, 30);
+		passwordField.setBounds(250, 300, 300, 40);
+
+		loginButton.setBounds(250, 370, 140, 40);
+		signUpButton.setBounds(410, 370, 140, 40);
+
+		loginButton.addActionListener(e -> login());
 		signUpButton.addActionListener(e -> {
 			CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
 			cardLayout.show(mainFrame.getContentPane(), "SignUpView");
 		});
 
-		add(usernameLabel);
-		add(usernameField);
-		add(passwordLabel);
-		add(passwordField);
-		add(loginButton);
-		add(signUpButton);
+		// 컴포넌트 추가
+		centerPanel.add(usernameLabel);
+		centerPanel.add(usernameField);
+		centerPanel.add(passwordLabel);
+		centerPanel.add(passwordField);
+		centerPanel.add(loginButton);
+		centerPanel.add(signUpButton);
+
+		add(centerPanel, BorderLayout.CENTER);
 	}
 
 	public void setOnLoginSuccessListener(OnLoginSuccessListener listener) {

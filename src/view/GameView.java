@@ -421,7 +421,7 @@ public class GameView extends JPanel {
 
 		int startX = -effectGif.getIconWidth() + 200;
 		int endX = (opponentPanel.getWidth() - effectGif.getIconWidth()) / 2;
-		int effectY = (opponentPanel.getHeight() - effectGif.getIconHeight()) / 2;
+		int effectY = (opponentPanel.getHeight() - effectGif.getIconHeight()) * 3 / 4; //시작 높이 수정
 		effectLabel.setBounds(startX, effectY, effectGif.getIconWidth(), effectGif.getIconHeight());
 
 		effectPanel.add(effectLabel);
@@ -488,6 +488,7 @@ public class GameView extends JPanel {
 			int actualHeal = Math.min(healAmount, player.getMaxHealth() - player.getHealth());
 			player.heal(actualHeal);
 			showTakeDamageHeal(actualHeal, false);
+			showPlayerEffect("heal.gif");
 			updatePlayerInfo();
 		} else if ("공격력 증가 물약".equals(item.getName())) {
 			player.increaseAttackPower(10);
@@ -498,7 +499,7 @@ public class GameView extends JPanel {
 		}
 
 		// 아이템 수량 감소 및 버튼 제거
-		item.decreaseQuantity(1);
+		item.decreaseQuantity();
 		itemButton.setText(item.getName() + "x" + item.getQuantity());
 		if (item.getQuantity() <= 0) {
 			inventoryPanel.remove(itemButton); // 버튼 제거
