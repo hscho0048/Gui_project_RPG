@@ -2,6 +2,8 @@ package view;
 
 import javax.swing.*;
 import javax.swing.Timer;
+import javax.swing.border.TitledBorder;
+
 import java.awt.event.ActionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -22,7 +24,7 @@ public class GameView extends JPanel {
 	private HomeView homeView; // HomeView 참조
 	private ShopView shopView; // ShopView 참조
 	private JLabel playerImageLabel, opponentImageLabel;
-	private JLabel playerInfoLabel, opponentInfoLabel, stageLabel;
+	private JLabel playerInfoLabel, opponentInfoLabel, stageLabel, goldLabel;
 	private JProgressBar playerHealthBar, opponentHealthBar;
 	private JButton attackButton, skillAttackButton, defendButton, nextButton, homeButton;
 	private JPanel playerPanel, opponentPanel;
@@ -40,6 +42,7 @@ public class GameView extends JPanel {
 	private JLabel turnCountLabel; // 턴 수를 표시할 레이블
 	private int turnCount = 1; // 초기 턴 수
 	private int currentStage = 1; // 초기 스테이지 수
+	private int goldCount;
 
 	public GameView(String playerName, UserController userController, Player player, JFrame mainFrame,
 			HomeView homeView) {
@@ -70,28 +73,37 @@ public class GameView extends JPanel {
 	private void initializeUI() {
 		// 상단 패널 (스테이지 및 플레이어 정보 포함)
 		JPanel topPanel = new JPanel(new BorderLayout());
+		topPanel.setBorder(BorderFactory.createEmptyBorder(5, 20, 5, 20));
 
 		// 스테이지 레이블 초기화
 		stageLabel = new JLabel("Stage " + gameController.getCurrentStage());
-		stageLabel.setFont(new Font("Serif", Font.BOLD, 24));
+		stageLabel.setFont(new Font("Dialog", Font.BOLD, 24));
 		stageLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-		// 플레이어 정보 및 상대 패널 초기화
-		initializePlayerPanel();
-		initializeOpponentPanel();
 		// 턴 수 레이블 초기화
 		turnCountLabel = new JLabel("턴 수: " + turnCount);
-		turnCountLabel.setFont(new Font("Serif", Font.PLAIN, 16));
+		turnCountLabel.setFont(new Font("Dialog", Font.BOLD, 16));
 		turnCountLabel.setHorizontalAlignment(SwingConstants.LEFT);
+		turnCountLabel.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
+
+		goldCount = userController.getGold(player.getId());
+		goldLabel = new JLabel("골드: " + goldCount);
+		goldLabel.setFont(new Font("Dialog", Font.BOLD, 16));
+		goldLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+		goldLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 20));
 
 		// 상단 패널 구성
 		topPanel.add(stageLabel, BorderLayout.CENTER);
 		topPanel.add(turnCountLabel, BorderLayout.WEST);
-		topPanel.setMaximumSize(new Dimension(800, 30));
-		topPanel.setPreferredSize(new Dimension(800, 30));
+		topPanel.add(goldLabel, BorderLayout.EAST);
+		topPanel.setPreferredSize(new Dimension(800, 50));
 
 		// 전체 레이아웃에 상단 패널 추가
 		add(topPanel, BorderLayout.NORTH);
+
+		// 플레이어 정보 및 상대 패널 초기화
+		initializePlayerPanel();
+		initializeOpponentPanel();
 
 		// 로그와 버튼 초기화
 		initializeLogAndButtons();
@@ -99,31 +111,30 @@ public class GameView extends JPanel {
 
 	// 로그와 버튼 초기화 메서드
 	private void initializeLogAndButtons() {
-		// 버튼 패널
+		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		buttonPanel.setPreferredSize(new Dimension(800, 60));
+		// 버튼 스타일 변경
+		Dimension buttonSize = new Dimension(120, 40);
+		Font buttonFont = new Font("Dialog", Font.BOLD, 14);
 		attackButton = new JButton("공격");
-		attackButton.addActionListener(e -> handleAttackButton(true));
-
 		skillAttackButton = new JButton("특수공격");
-		skillAttackButton.addActionListener(e -> handleAttackButton(false)); // 특수공격 버튼 클릭 이벤트 추가
-
 		defendButton = new JButton("방어");
-		defendButton.addActionListener(e -> playerDefend());
-
 		nextButton = new JButton("다음");
-		nextButton.addActionListener(e -> nextStage());
-		nextButton.setEnabled(false);
-
 		homeButton = new JButton("홈으로");
+		JButton[] buttons = { attackButton, skillAttackButton, defendButton, nextButton, homeButton };
+		for (JButton button : buttons) {
+			button.setPreferredSize(buttonSize);
+			button.setFont(buttonFont);
+			button.setFocusPainted(false);
+			button.setBorder(BorderFactory.createRaisedBevelBorder());
+			buttonPanel.add(button);
+		}
+		attackButton.addActionListener(e -> handleAttackButton(true));
+		skillAttackButton.addActionListener(e -> handleAttackButton(false));
+		defendButton.addActionListener(e -> playerDefend());
+		nextButton.addActionListener(e -> nextStage());
 		homeButton.addActionListener(e -> returnToHome());
-
-		JPanel buttonPanel = new JPanel(new GridLayout(1, 6));
-		buttonPanel.add(attackButton);
-		buttonPanel.add(skillAttackButton);
-		buttonPanel.add(defendButton);
-		buttonPanel.add(nextButton);
-		buttonPanel.add(homeButton);
-		buttonPanel.setMaximumSize(new Dimension(800, 30));
-		buttonPanel.setPreferredSize(new Dimension(800, 30));
+		nextButton.setEnabled(false);
 		add(buttonPanel, BorderLayout.SOUTH);
 	}
 
@@ -131,15 +142,16 @@ public class GameView extends JPanel {
 	private void initializePlayerPanel() {
 		// 캐릭터 관련 UI 요소
 		playerImageLabel = new JLabel(player.getCharacterImage());
-		playerImageLabel.setPreferredSize(new Dimension(300, 225));
-		playerImageLabel.setMaximumSize(new Dimension(300, 225));
-		playerImageLabel.setMinimumSize(new Dimension(300, 225));
+		playerImageLabel.setPreferredSize(new Dimension(300, 240));
+		playerImageLabel.setMaximumSize(new Dimension(300, 240));
+		playerImageLabel.setMinimumSize(new Dimension(300, 240));
 		playerImageLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		playerImageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		playerImageLabel.setOpaque(true);
 		playerInfoLabel = new JLabel("플레이어: " + player.getName());
-		playerInfoLabel.setPreferredSize(new Dimension(300, 40));
-		playerInfoLabel.setMaximumSize(new Dimension(300, 40));
-		playerInfoLabel.setMinimumSize(new Dimension(300, 40));
+		playerInfoLabel.setPreferredSize(new Dimension(300, 20));
+		playerInfoLabel.setMaximumSize(new Dimension(300, 20));
+		playerInfoLabel.setMinimumSize(new Dimension(300, 20));
 		playerInfoLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		playerInfoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -153,17 +165,19 @@ public class GameView extends JPanel {
 		// 인벤토리 패널 (독립적으로 관리)
 		inventoryPanel = new JPanel();
 		inventoryPanel.setLayout(new BoxLayout(inventoryPanel, BoxLayout.Y_AXIS));
+		inventoryPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 5, 10));
 
 		JScrollPane scrollPane = new JScrollPane(inventoryPanel);
-		scrollPane.setPreferredSize(new Dimension(300, 210)); // 원하는 크기로 설정
+		scrollPane.setPreferredSize(new Dimension(300, 180)); // 원하는 크기로 설정
 		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		scrollPane.setBorder(BorderFactory.createTitledBorder("인벤토리"));
+		scrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "인벤토리",
+				TitledBorder.CENTER, TitledBorder.TOP, new Font("Dialog", Font.BOLD, 16)));
 
 		inventoryPanel.setMaximumSize(new Dimension(300, Integer.MAX_VALUE));
 
 		playerLayeredPane = new JLayeredPane();
-		playerLayeredPane.setPreferredSize(new Dimension(300, 540));
+		playerLayeredPane.setPreferredSize(new Dimension(300, 470));
 
 		// 플레이어 패널 구성
 		playerPanel = new JPanel();
@@ -171,11 +185,11 @@ public class GameView extends JPanel {
 		playerPanel.add(playerInfoLabel);
 		playerPanel.add(playerHealthBar);
 		playerPanel.add(playerImageLabel);
-		playerPanel.setMaximumSize(new Dimension(300, 330));
+		playerPanel.setMaximumSize(new Dimension(300, 280));
 		playerPanel.setOpaque(false);
 
-		playerPanel.setBounds(0, 210, 300, 330);
-		scrollPane.setBounds(0, 0, 300, 210);
+		playerPanel.setBounds(0, 190, 300, 280);
+		scrollPane.setBounds(0, 0, 300, 190);
 
 		playerLayeredPane.add(playerPanel, JLayeredPane.DEFAULT_LAYER);
 		playerLayeredPane.add(scrollPane, JLayeredPane.DEFAULT_LAYER);
@@ -218,16 +232,17 @@ public class GameView extends JPanel {
 
 	private void initializeOpponentPanel() {
 		opponentImageLabel = new JLabel(new ImageIcon(getClass().getClassLoader().getResource("opponentImage.png")));
-		opponentImageLabel.setPreferredSize(new Dimension(500, 470));
-		opponentImageLabel.setMaximumSize(new Dimension(500, 470));
-		opponentImageLabel.setMinimumSize(new Dimension(500, 470));
+		opponentImageLabel.setPreferredSize(new Dimension(500, 420));
+		opponentImageLabel.setMaximumSize(new Dimension(500, 420));
+		opponentImageLabel.setMinimumSize(new Dimension(500, 420));
 		opponentImageLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		opponentImageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
 		opponentInfoLabel = new JLabel(opponent.getName());
-		opponentInfoLabel.setPreferredSize(new Dimension(500, 50));
-		opponentInfoLabel.setMaximumSize(new Dimension(500, 50));
-		opponentInfoLabel.setMinimumSize(new Dimension(500, 50));
+		opponentInfoLabel.setFont(new Font("Dialog", Font.BOLD, 24));
+		opponentInfoLabel.setPreferredSize(new Dimension(500, 30));
+		opponentInfoLabel.setMaximumSize(new Dimension(500, 30));
+		opponentInfoLabel.setMinimumSize(new Dimension(500, 30));
 		opponentInfoLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		opponentInfoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -242,7 +257,7 @@ public class GameView extends JPanel {
 
 		// 상대 패널 구성
 		opponentLayeredPane = new JLayeredPane();
-		opponentLayeredPane.setPreferredSize(new Dimension(500, 540));
+		opponentLayeredPane.setPreferredSize(new Dimension(500, 470));
 
 		opponentPanel = new JPanel();
 		opponentPanel.setLayout(new BoxLayout(opponentPanel, BoxLayout.Y_AXIS));
@@ -250,7 +265,7 @@ public class GameView extends JPanel {
 		opponentPanel.add(opponentHealthBar);
 		opponentPanel.add(opponentImageLabel);
 		// opponent 패널 크기와 위치 설정
-		opponentPanel.setBounds(0, 0, 500, 540);
+		opponentPanel.setBounds(0, 0, 500, 470);
 		// 기본 레이어에 opponent 패널 추가
 		opponentLayeredPane.add(opponentPanel, JLayeredPane.DEFAULT_LAYER);
 		// 메인 레이아웃에 레이어드 패널 추가
@@ -262,6 +277,10 @@ public class GameView extends JPanel {
 		healthBar.setValue(currentHealth);
 		healthBar.setString(currentHealth + " / " + maxHealth);
 		healthBar.setStringPainted(true);
+		healthBar.setForeground(new Color(220, 20, 60)); // 크림슨 레드
+		healthBar.setBackground(Color.LIGHT_GRAY);
+		healthBar.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+		healthBar.setFont(new Font("Dialog", Font.BOLD, 12));
 	}
 
 	private void handleAttackButton(boolean is_attack) {
@@ -421,7 +440,7 @@ public class GameView extends JPanel {
 
 		int startX = -effectGif.getIconWidth() + 200;
 		int endX = (opponentPanel.getWidth() - effectGif.getIconWidth()) / 2;
-		int effectY = (opponentPanel.getHeight() - effectGif.getIconHeight()) * 3 / 4; //시작 높이 수정
+		int effectY = (opponentPanel.getHeight() - effectGif.getIconHeight()) * 3 / 4; // 시작 높이 수정
 		effectLabel.setBounds(startX, effectY, effectGif.getIconWidth(), effectGif.getIconHeight());
 
 		effectPanel.add(effectLabel);

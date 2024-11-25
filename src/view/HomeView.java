@@ -127,7 +127,6 @@ public class HomeView extends JPanel {
 	}
 
 	private void showShopView() {
-		initializeGameAndShopViews(); // 필요할 때 초기화
 		if (player == null) {
 			JOptionPane.showMessageDialog(this, "플레이어 정보가 없습니다. 다시 로그인해주세요.", "오류", JOptionPane.ERROR_MESSAGE);
 			return;
@@ -175,20 +174,6 @@ public class HomeView extends JPanel {
 
 		CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
 		cardLayout.show(mainFrame.getContentPane(), "CharacterView");
-	}
-
-	private void initializeGameAndShopViews() {
-		if (gameView == null) {
-			GameView gameView = new GameView(player.getName(), userController, player, mainFrame, this);
-			mainFrame.getContentPane().add(gameView, "GameView");
-			System.out.println("GameView 초기화 완료");
-		}
-
-		if (shopView == null) {
-			shopView = new ShopView(player, userController, gameView, mainFrame, this);
-			mainFrame.getContentPane().add(shopView, "ShopView");
-			System.out.println("ShopView 초기화 완료");
-		}
 	}
 
 	public void updateRanking() {
