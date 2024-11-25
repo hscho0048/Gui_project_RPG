@@ -114,6 +114,7 @@ public class Player {
 
 	// 캐릭터 이름 Getter
 	public String getCharacterName() {
+
 		return characterName;
 	}
 
@@ -188,27 +189,22 @@ public class Player {
 
 	// 아이템 구매
 	public boolean buyItem(Item item) {
-		if (money >= item.getPrice()) {
-			money -= item.getPrice(); // 돈 차감
-			boolean itemExists = false;
+		boolean itemExists = false;
 
-			// 이미 인벤토리에 있는 아이템인지 확인
-			for (Item existingItem : inventory) {
-				if (existingItem.getName().equals(item.getName())) {
-					existingItem.increaseQuantity(item.getQuantity()); // 수량 증가
-					itemExists = true;
-					break;
-				}
+		// 이미 인벤토리에 있는 아이템인지 확인
+		for (Item existingItem : inventory) {
+			if (existingItem.getName().equals(item.getName())) {
+				existingItem.increaseQuantity(item.getQuantity()); // 수량 증가
+				itemExists = true;
+				break;
 			}
-
-			if (!itemExists) {
-				inventory.add(item); // 인벤토리에 추가
-				item.increaseQuantity(1);
-			}
-			return true; // 구매 성공
-		} else {
-			return false; // 돈 부족
 		}
+
+		if (!itemExists) {
+			inventory.add(item); // 인벤토리에 추가
+			item.increaseQuantity(1);
+		}
+		return true; // 구매 성공
 	}
 
 	// 캐릭터 상태 설정 메서드
@@ -252,6 +248,10 @@ public class Player {
 
 	public void setPlayerId(int id) {
 		this.id = id;
+	}
+
+	public boolean isJobEmpty() {
+		return characterName == null || characterName.isEmpty();
 	}
 
 	public void levelUp(int healthIncrease, int attackIncrease, int specialAttackIncrease, int defenseIncrease,

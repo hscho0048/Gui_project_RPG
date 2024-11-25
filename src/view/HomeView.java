@@ -49,7 +49,6 @@ public class HomeView extends JPanel {
 		characterSelectButton = new JButton("캐릭터 선택");
 		characterSelectButton.addActionListener(e -> {
 			showCharacterView(); // 캐릭터 선택 화면 표시
-			enableBattleButton(); // 캐릭터 선택 후 대결 버튼 활성화
 		});
 
 		// 버튼 패널에 버튼 추가
@@ -84,9 +83,9 @@ public class HomeView extends JPanel {
 	}
 
 	// 대결 버튼 활성화 메서드
-	private void enableBattleButton() {
+	public void enableBattleButton() {
 		battleButton.setEnabled(true);
-		System.out.println("대결 버튼 활성화됨: " + player.getCharacterName());
+		System.out.println("대결 버튼 활성화");
 
 	}
 
@@ -139,6 +138,8 @@ public class HomeView extends JPanel {
 			if (component instanceof ShopView) {
 				// ShopView가 이미 추가되어 있으면 해당 화면으로 전환
 				((ShopView) component).updatePlayerInfo();
+				((ShopView) component).updateInventoryPanel();
+
 				CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
 				cardLayout.show(mainFrame.getContentPane(), "ShopView");
 				return;

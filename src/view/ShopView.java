@@ -34,6 +34,11 @@ public class ShopView extends JPanel {
 		this.shop = new Shop();
 		Font font = new Font("Default", Font.BOLD, 15);
 
+		int updatedGold = userController.getGold(player.getId());
+		if (updatedGold != -1) {
+			player.setMoney(updatedGold); // 데이터베이스 값으로 갱신
+		}
+
 		// 플레이어 정보
 		playerInfoLabel = new JLabel("플레이어: " + player.getName() + " | 금액: " + player.getMoney());
 		playerInfoLabel.setFont(font);
@@ -123,11 +128,24 @@ public class ShopView extends JPanel {
 
 		if (selectedItem != null) {
 			if (player.getMoney() >= selectedItem.getPrice()) {
-				player.buyItem(selectedItem); // 플레이어 인벤토리에 아이템 추가
-				updatePlayerInfo();
-				userController.recordPurchase(player.getId(), selectedItem.getName()); // 구매 기록 저장
-				updateInventoryPanel(); // 인벤토리 UI 갱신
-				System.out.println("아이템이 인벤토리에 추가되었습니다: " + selectedItem.getName());
+
+				int goldChange = -selectedItem.getPrice();
+
+				// 데이터베이스 업데이트
+				boolean updateSuccess = userController.updateGold(player.getId(), goldChange);
+				if (updateSuccess) {
+					// 플레이어 인벤토리에 아이템 추가
+					player.buyItem(selectedItem);
+
+					// UI 업데이트
+					updatePlayerInfo();
+					updateInventoryPanel();
+					userController.recordPurchase(player.getId(), selectedItem.getName()); // 구매 기록 저장
+					JOptionPane.showMessageDialog(this, selectedItem.getName() + "을(를) 구매했습니다!");
+				} else {
+					JOptionPane.showMessageDialog(this, "데이터베이스 업데이트 실패!", "오류", JOptionPane.ERROR_MESSAGE);
+				}
+
 			} else {
 				JOptionPane.showMessageDialog(this, "돈이 부족합니다.", "오류", JOptionPane.ERROR_MESSAGE);
 			}
@@ -136,7 +154,7 @@ public class ShopView extends JPanel {
 		}
 	}
 
-	private void updateInventoryPanel() {
+	public void updateInventoryPanel() {
 		inventoryPanel.removeAll(); // 기존 패널 내용 제거
 
 		List<Item> inventory = player.getInventory();
@@ -157,6 +175,15 @@ public class ShopView extends JPanel {
 	}
 
 	public void updatePlayerInfo() {
+		// 데이터베이스에서 최신 골드 정보 가져오기
+		int updatedGold = userController.getGold(player.getId());
+		if (updatedGold != -1) { // 유효한 값일 경우에만 업데이트
+			player.setMoney(updatedGold);
+		} else {
+			System.out.println("골드 정보를 불러오는 데 실패했습니다.");
+		}
+
+		// UI에 갱신된 골드 정보를 반영
 		playerInfoLabel.setText("플레이어: " + player.getName() + " | 금액: " + player.getMoney());
 		revalidate();
 		repaint();

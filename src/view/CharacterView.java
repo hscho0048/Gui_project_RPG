@@ -27,7 +27,8 @@ public class CharacterView extends JPanel {
 		Font font = new Font("Default", Font.BOLD, 15);
 
 		// 플레이어 정보
-		playerInfoLabel = new JLabel("플레이어: " + player.getName() + " | 금액: " + player.getMoney());
+		playerInfoLabel = new JLabel(
+				"플레이어: " + player.getName() + " | 직업: " + (player.isJobEmpty() ? "없음" : player.getCharacterName()));
 		playerInfoLabel.setFont(font);
 		add(playerInfoLabel, BorderLayout.NORTH);
 
@@ -48,14 +49,17 @@ public class CharacterView extends JPanel {
 
 		add(characterPanel, BorderLayout.CENTER);
 
-		// 선택  버튼 추가
+		// 선택 버튼 추가
 		selectButton = new JButton("선택");
 		selectButton.addActionListener(e -> handleSelectCharacter());
 
-		
+		backButton = new JButton("Home");
+		backButton.addActionListener(e -> handleBack());
+
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
 		buttonPanel.add(selectButton);
+		buttonPanel.add(backButton);
 
 		add(buttonPanel, BorderLayout.SOUTH);
 
@@ -118,12 +122,12 @@ public class CharacterView extends JPanel {
 					selectedCharacter.getDefensePower(), selectedCharacter.getSpecialDefensePower(),
 					selectedCharacter.getImage());
 
-			JOptionPane.showMessageDialog(this, selectedCharacter.getName() + " 캐릭터가 선택되었습니다.", "알림",
-					JOptionPane.INFORMATION_MESSAGE);
+			updatePlayerInfo();
 
-			// HomeView로 돌아가기
+			// 선택 성공 이펙트
+
 			updateCharacterInDatabase(selectedCharacter.getName()); // 캐릭터 이름을 DB에 업데이트
-			returnToHome();
+			homeView.enableBattleButton();
 		} else {
 			JOptionPane.showMessageDialog(this, "캐릭터를 선택해주세요.", "오류", JOptionPane.ERROR_MESSAGE);
 		}
@@ -140,7 +144,8 @@ public class CharacterView extends JPanel {
 	}
 
 	public void updatePlayerInfo() {
-		playerInfoLabel.setText("플레이어: " + player.getName() + " | 금액: " + player.getMoney());
+		playerInfoLabel.setText(
+				"플레이어: " + player.getName() + " | 직업: " + (player.isJobEmpty() ? "없음" : player.getCharacterName()));
 		revalidate();
 		repaint();
 	}
