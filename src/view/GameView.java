@@ -1,7 +1,6 @@
 package view;
 
 import javax.swing.*;
-import javax.swing.Timer;
 import javax.swing.border.TitledBorder;
 
 import java.awt.event.ActionListener;
@@ -43,6 +42,9 @@ public class GameView extends JPanel {
 	private int turnCount = 1; // 초기 턴 수
 	private int currentStage = 1; // 초기 스테이지 수
 	private int goldCount;
+	private JPanel playerStatPanel, opponentStatPanel;  // 스탯 패널
+	private JPanel[] opponentStatBoxes;
+	private JPanel[] playerStatBoxes;
 
 	public GameView(String playerName, UserController userController, Player player, JFrame mainFrame,
 			HomeView homeView) {
@@ -180,30 +182,18 @@ public class GameView extends JPanel {
 		playerLayeredPane = new JLayeredPane();
 		playerLayeredPane.setPreferredSize(new Dimension(300, 470));
 
-		// 스탯 패널 추가
-		JPanel statPanel = new JPanel();
-		statPanel.setLayout(new BoxLayout(statPanel, BoxLayout.X_AXIS));
-		statPanel.setPreferredSize(new Dimension(300, 100));
-		statPanel.add(createStatBox("공격력", player.getAttackPower(), Color.RED));
-		statPanel.add(Box.createRigidArea(new Dimension(10, 0)));
-		statPanel.add(createStatBox("방어력", player.getDefensePower(), Color.BLUE));
-		statPanel.add(Box.createRigidArea(new Dimension(10, 0)));
-		statPanel.add(createStatBox("특공", player.getSpecialAttackPower(), Color.GREEN));
-
-		inventoryPanel.add(statPanel);
-		inventoryPanel.add(Box.createRigidArea(new Dimension(0, 10))); // 여백 추가
-
 		// 플레이어 패널 구성
 		playerPanel = new JPanel();
 		playerPanel.setLayout(new BoxLayout(playerPanel, BoxLayout.Y_AXIS));
 		playerPanel.add(playerInfoLabel);
 		playerPanel.add(playerHealthBar);
 		playerPanel.add(playerImageLabel);
-		playerPanel.add(statPanel); // 스탯 패널 추가
+		playerPanel.add(createPlayerStatPanel());
+		
 		playerPanel.setMaximumSize(new Dimension(300, 380));
 		playerPanel.setOpaque(false);
 
-		playerPanel.setBounds(0, 190, 300, 380);
+		playerPanel.setBounds(0, 190, 300, 760);
 		scrollPane.setBounds(0, 0, 300, 190);
 
 		playerLayeredPane.add(playerPanel, JLayeredPane.DEFAULT_LAYER);
@@ -294,15 +284,16 @@ public class GameView extends JPanel {
 
 		// 상대 패널 구성
 		opponentLayeredPane = new JLayeredPane();
-		opponentLayeredPane.setPreferredSize(new Dimension(500, 470));
+		opponentLayeredPane.setPreferredSize(new Dimension(500, 800));
 
 		opponentPanel = new JPanel();
 		opponentPanel.setLayout(new BoxLayout(opponentPanel, BoxLayout.Y_AXIS));
 		opponentPanel.add(opponentInfoLabel);
 		opponentPanel.add(opponentHealthBar);
 		opponentPanel.add(opponentImageLabel);
+		opponentPanel.add(createOpponentStatPanel());
 		// opponent 패널 크기와 위치 설정
-		opponentPanel.setBounds(0, 0, 500, 470);
+		opponentPanel.setBounds(0, 0, 500, 800);
 		// 기본 레이어에 opponent 패널 추가
 		opponentLayeredPane.add(opponentPanel, JLayeredPane.DEFAULT_LAYER);
 		// 메인 레이아웃에 레이어드 패널 추가
@@ -320,34 +311,120 @@ public class GameView extends JPanel {
 		healthBar.setFont(new Font("Dialog", Font.BOLD, 12));
 	}
 
-	// 스탯 박스 생성 메서드
-	private JPanel createStatBox(String title, int value, Color color) {
-		JPanel statBox = new JPanel();
-		statBox.setLayout(new BoxLayout(statBox, BoxLayout.Y_AXIS)); // 세로 정렬
-		statBox.setPreferredSize(new Dimension(80, 80)); // 박스 크기 설정
-		statBox.setBackground(color);
-		statBox.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // 테두리 설정
+	// 플레이어 스탯 패널 생성 메서드
+	 	private JPanel createPlayerStatPanel() {
+	 		playerStatPanel = new JPanel();
+		    playerStatPanel.setLayout(new BoxLayout(playerStatPanel, BoxLayout.X_AXIS)); // 가로로 배치
+		    playerStatPanel.setPreferredSize(new Dimension(300, 100));
+		    playerStatPanel.setMaximumSize(new Dimension(300, 100)); // 스탯 패널 크기 고정
+		    playerStatPanel.setBorder(BorderFactory.createTitledBorder(
+		        BorderFactory.createLineBorder(Color.BLACK),
+		        "스탯 정보",
+		        TitledBorder.CENTER,
+		        TitledBorder.TOP,
+		        new Font("Dialog", Font.BOLD, 16)
+		    ));
+		    
+		    // 스탯 박스 추가
+		    playerStatPanel.add(Box.createRigidArea(new Dimension(15, 0))); // 간격 추가
+		    JPanel attackBox = createStatBox("공격력", player.getAttackPower(), Color.RED);
+		    playerStatPanel.add(attackBox);
+		    playerStatPanel.add(Box.createRigidArea(new Dimension(10, 0))); // 간격 추가
+		    JPanel defenceBox = createStatBox("방어력", player.getDefensePower(), Color.BLUE);
+		    playerStatPanel.add(defenceBox);
+		    playerStatPanel.add(Box.createRigidArea(new Dimension(10, 0))); // 간격 추가
+		    JPanel specialAttackBox = createStatBox("특공", player.getSpecialAttackPower(), Color.GREEN);
+		    playerStatPanel.add(specialAttackBox);
+		    
+		    playerStatBoxes = new JPanel[] {attackBox, defenceBox, specialAttackBox};
+		    
+		    return playerStatPanel;
+		}
+	 	
+	 	// 상대 스탯 패널 생성 메서드
+	  	private JPanel createOpponentStatPanel() {
+	  		opponentStatPanel = new JPanel();
+	 	    opponentStatPanel.setLayout(new BoxLayout(opponentStatPanel, BoxLayout.X_AXIS)); // 가로로 배치
+	 	    opponentStatPanel.setPreferredSize(new Dimension(300, 100));
+	 	    opponentStatPanel.setMaximumSize(new Dimension(300, 100)); // 스탯 패널 크기 고정
+	 	    opponentStatPanel.setBorder(BorderFactory.createTitledBorder(
+	 	        BorderFactory.createLineBorder(Color.BLACK),
+	 	        "스탯 정보",
+	 	        TitledBorder.CENTER,
+	 	        TitledBorder.TOP,
+	 	        new Font("Dialog", Font.BOLD, 16)
+	 	    ));
 
-		// 타이틀 라벨
-		JLabel titleLabel = new JLabel(title);
-		titleLabel.setFont(new Font("Dialog", Font.BOLD, 12));
-		titleLabel.setForeground(Color.WHITE);
-		titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+	 	    // 스탯 박스 추가
+	 	    opponentStatPanel.add(Box.createRigidArea(new Dimension(15, 0))); // 간격 추가
+	 	    JPanel attackBox = createStatBox("공격력", opponent.getAttackPower(), Color.RED);
+	 	    opponentStatPanel.add(attackBox);
+	 	    opponentStatPanel.add(Box.createRigidArea(new Dimension(10, 0))); // 간격 추가
+	 	    JPanel defenceBox = createStatBox("방어력", opponent.getDefense(), Color.BLUE);
+	 	    opponentStatPanel.add(defenceBox);
+	 	    opponentStatPanel.add(Box.createRigidArea(new Dimension(10, 0))); // 간격 추가
+	 	    JPanel specialAttackBox = createStatBox("특공", opponent.getSpecialAttackPower(), Color.GREEN);
+	 	    opponentStatPanel.add(specialAttackBox);
+	 	    
+	 	    opponentStatBoxes = new JPanel[] {attackBox, defenceBox, specialAttackBox};
+	 	    
+	 	    return opponentStatPanel;
+	 	}
 
-		// 값 라벨
-		JLabel valueLabel = new JLabel(String.valueOf(value));
-		valueLabel.setFont(new Font("Dialog", Font.BOLD, 16));
-		valueLabel.setForeground(Color.WHITE);
-		valueLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		// 스탯 박스 생성 메서드
+		private JPanel createStatBox(String title, int value, Color color) {
+		    JPanel statBox = new JPanel();
+		    statBox.setLayout(new BoxLayout(statBox, BoxLayout.X_AXIS)); // 가로 정렬
+		    statBox.setPreferredSize(new Dimension(80, 80));
+		    statBox.setMaximumSize(new Dimension(80, 80));
+		    statBox.setBorder(BorderFactory.createTitledBorder(
+		    		BorderFactory.createLineBorder(color),
+		    		title,
+		    		TitledBorder.CENTER,
+		    		TitledBorder.TOP,
+		    		new Font("Dialog", Font.BOLD, 12)
+		    ));
+		    
+		    JLabel textLabel = new JLabel(String.valueOf(value));
+		    textLabel.setFont(new Font("Dialog", Font.BOLD, 15));
+		    textLabel.setForeground(color);
+		    textLabel.setHorizontalAlignment(JLabel.CENTER);
+		    textLabel.setAlignmentX(Component.CENTER_ALIGNMENT);  // JPanel 내에서 중앙 정렬
+		    
+		    statBox.add(textLabel);
+		    
+		    return statBox;
+		}
 
-		// 박스에 라벨 추가
-		statBox.add(Box.createRigidArea(new Dimension(0, 5))); // 상단 여백
-		statBox.add(titleLabel);
-		statBox.add(Box.createRigidArea(new Dimension(0, 5))); // 타이틀과 값 간 여백
-		statBox.add(valueLabel);
+		// 스탯 값 업데이트 메서드
+		public void playerUpdateStat(String statName, int newValue) {
+		    for (JPanel statBox : playerStatBoxes) {
+		        TitledBorder border = (TitledBorder) statBox.getBorder();
+		        String title = border.getTitle();
 
-		return statBox;
-	}
+		        // 해당 스탯 박스를 찾고 값 업데이트
+		        if (title.equals(statName)) {
+		            JLabel label = (JLabel) statBox.getComponent(0);
+		            label.setText(String.valueOf(newValue)); // JLabel 업데이트
+		            break;
+		        }
+		    }
+		}
+		
+		public void opponentUpdateStat(String statName, int newValue) {
+		    for (JPanel statBox : opponentStatBoxes) {
+		        TitledBorder border = (TitledBorder) statBox.getBorder();
+		        String title = border.getTitle();
+
+		        // 해당 스탯 박스를 찾고 값 업데이트
+		        if (title.equals(statName)) {
+		            JLabel label = (JLabel) statBox.getComponent(0);
+		            label.setText(String.valueOf(newValue)); // JLabel 업데이트
+		            break;
+		        }
+		    }
+		}
+
 
 	private void handleAttackButton(boolean is_attack) {
 		if (!isPlayerTurn) {
@@ -742,6 +819,7 @@ public class GameView extends JPanel {
 				if (currentY >= targetY) {
 					((Timer) e.getSource()).stop();
 					opponentImageLabel.setVisible(false);
+					opponentStatPanel.setVisible(false);
 				}
 			}
 		});
@@ -756,6 +834,7 @@ public class GameView extends JPanel {
 		updatePlayerInfo();
 		updateStage(gameController.getCurrentStage());
 		updateOpponentImage();
+		opponentStatPanel.setVisible(true);
 		updateOpponentInfo();
 
 		// 0.5초 딜레이
@@ -827,6 +906,11 @@ public class GameView extends JPanel {
 
 		// 체력 바 업데이트
 		setupHealthBar(playerHealthBar, player.getHealth(), player.getMaxHealth());
+		
+		// 스탯 정보 업데이트
+	    playerUpdateStat("공격력", player.getAttackPower());
+		playerUpdateStat("방어력", player.getDefensePower());
+		playerUpdateStat("특공", player.getSpecialAttackPower());
 
 		// 화면 갱신
 		revalidate();
@@ -836,6 +920,12 @@ public class GameView extends JPanel {
 	private void updateOpponentInfo() {
 		opponentInfoLabel.setText(opponent.getName());
 		setupHealthBar(opponentHealthBar, opponent.getHealth(), opponent.getMaxHealth());
+		
+		// 스탯 정보 업데이트
+		opponentUpdateStat("공격력", opponent.getAttackPower());
+		opponentUpdateStat("방어력", opponent.getDefense());
+		opponentUpdateStat("특공", opponent.getSpecialAttackPower());
+
 	}
 
 	private void updateStage(int stage) {
