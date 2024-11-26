@@ -211,19 +211,20 @@ public class ShopView extends JPanel {
 	}
 
 	public void updatePlayerInfo() {
-		// 데이터베이스에서 최신 골드 정보 가져오기
-		int updatedGold = userController.getGold(player.getId());
-		if (updatedGold != -1) { // 유효한 값일 경우에만 업데이트
-			player.setMoney(updatedGold);
-		} else {
-			System.out.println("골드 정보를 불러오는 데 실패했습니다.");
-		}
+	    // 데이터베이스에서 최신 골드 정보 가져오기
+	    int updatedGold = userController.getGold(player.getId());
+	    if (updatedGold != -1) { // 유효한 값일 경우에만 업데이트
+	        player.setMoney(updatedGold); // Player 객체의 money 필드를 갱신
+	    } else {
+	        System.out.println("골드 정보를 불러오는 데 실패했습니다.");
+	    }
 
-		// UI에 갱신된 골드 정보를 반영
-		playerInfoLabel.setText("플레이어: " + player.getName() + " | 금액: " + player.getMoney());
-		revalidate();
-		repaint();
+	    // UI에 갱신된 정보를 반영 (goldLabel 제거)
+	    playerInfoLabel.setText("플레이어: " + player.getName() + " | 금액: " + player.getMoney()); // Player의 money 사용
+	    revalidate();
+	    repaint();
 	}
+
 
 	private void handleBack() {
 		CardLayout cardLayout = (CardLayout) mainFrame.getContentPane().getLayout();
