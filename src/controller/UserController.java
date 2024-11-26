@@ -6,6 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
 import java.io.*;
 import java.nio.file.*;
 import java.sql.*;
@@ -331,43 +333,70 @@ public class UserController {
 	}
 
 	public boolean recordPurchase(int userId, String itemName) {
-		if (userId <= 0) {
-			System.err.println("유효하지 않은 userId: " + userId);
-			return false;
-		}
+	    if (userId <= 0) {
+	        System.err.println("유효하지 않은 userId: " + userId);
+	        return false;
+	    }
 
-		String getItemsQuery = "SELECT items FROM users WHERE id = ?";
-		String updateItemsQuery = "UPDATE users SET items = ? WHERE id = ?";
+	    String getItemsQuery = "SELECT items FROM users WHERE id = ?";
+	    String updateItemsQuery = "UPDATE users SET items = ? WHERE id = ?";
 
-		try (PreparedStatement getItemsStmt = connection.prepareStatement(getItemsQuery);
-				PreparedStatement updateItemsStmt = connection.prepareStatement(updateItemsQuery)) {
-			getItemsStmt.setInt(1, userId);
-			ResultSet rs = getItemsStmt.executeQuery();
+	    try (PreparedStatement getItemsStmt = connection.prepareStatement(getItemsQuery);
+	         PreparedStatement updateItemsStmt = connection.prepareStatement(updateItemsQuery)) {
+	        getItemsStmt.setInt(1, userId);
+	        ResultSet rs = getItemsStmt.executeQuery();
 
-			String currentItems = null;
-			if (rs.next()) {
-				currentItems = rs.getString("items");
-			}
+	        String currentItems = null;
+	        if (rs.next()) {
+	            currentItems = rs.getString("items");
+	        }
 
-			String updatedItems = (currentItems == null || currentItems.isEmpty()) ? itemName
-					: currentItems + "," + itemName;
+	        // 아이템 수량 처리
+	        Map<String, Integer> itemMap = new HashMap<>();
+	        if (currentItems != null && !currentItems.isEmpty()) {
+	            String[] items = currentItems.split(",");
+	            for (String item : items) {
+	                String[] parts = item.split("\\*");
+	                String name = parts[0];
+	                int count = parts.length > 1 ? Integer.parseInt(parts[1]) : 1;
+	                itemMap.put(name, itemMap.getOrDefault(name, 0) + count);
+	            }
+	        }
 
-			updateItemsStmt.setString(1, updatedItems);
-			updateItemsStmt.setInt(2, userId);
-			int rowsUpdated = updateItemsStmt.executeUpdate();
+	        // 새 아이템 추가 또는 수량 업데이트
+	        itemMap.put(itemName, itemMap.getOrDefault(itemName, 0) + 1);
 
-			if (rowsUpdated > 0) {
-				System.out.println("아이템이 업데이트되었습니다: " + updatedItems);
-				return true; // 성공 시 true 반환
-			} else {
-				System.out.println("아이템 업데이트 실패.");
-				return false; // 실패 시 false 반환
-			}
-		} catch (SQLException e) {
-			System.err.println("아이템 기록 중 오류 발생: " + e.getMessage());
-			return false; // 예외 발생 시 false 반환
-		}
+	        // 업데이트된 아이템 문자열 생성
+	        StringBuilder updatedItemsBuilder = new StringBuilder();
+	        for (Map.Entry<String, Integer> entry : itemMap.entrySet()) {
+	            if (updatedItemsBuilder.length() > 0) {
+	                updatedItemsBuilder.append(",");
+	            }
+	            updatedItemsBuilder.append(entry.getKey());
+	            if (entry.getValue() > 1) {
+	                updatedItemsBuilder.append("*").append(entry.getValue());
+	            }
+	        }
+	        String updatedItems = updatedItemsBuilder.toString();
+
+	        // 데이터베이스 업데이트
+	        updateItemsStmt.setString(1, updatedItems);
+	        updateItemsStmt.setInt(2, userId);
+	        int rowsUpdated = updateItemsStmt.executeUpdate();
+
+	        if (rowsUpdated > 0) {
+	            System.out.println("아이템이 업데이트되었습니다: " + updatedItems);
+	            return true; // 성공 시 true 반환
+	        } else {
+	            System.out.println("아이템 업데이트 실패.");
+	            return false; // 실패 시 false 반환
+	        }
+	    } catch (SQLException e) {
+	        System.err.println("아이템 기록 중 오류 발생: " + e.getMessage());
+	        return false; // 예외 발생 시 false 반환
+	    }
 	}
+
 
 	public boolean updateCharacterName(int userId, String characterName) {
 		String query = "UPDATE users SET character_name = ? WHERE id = ?";

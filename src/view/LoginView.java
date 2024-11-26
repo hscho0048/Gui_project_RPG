@@ -63,8 +63,8 @@ public class LoginView extends JPanel {
 		passwordLabel.setBounds(250, 270, 100, 30);
 		passwordField.setBounds(250, 300, 300, 40);
 
-		loginButton.setBounds(250, 370, 140, 40);
-		signUpButton.setBounds(410, 370, 140, 40);
+		loginButton.setBounds(250, 450, 140, 40);
+		signUpButton.setBounds(410, 450, 140, 40);
 
 		loginButton.addActionListener(e -> login());
 		signUpButton.addActionListener(e -> {
