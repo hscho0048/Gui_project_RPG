@@ -45,6 +45,13 @@ public class Opponent {
 		return specialAttackPower;
 	}
 
+	public void setOpponentName(int num) {
+		if (num == 1)
+			this.name = "도스기르오스";
+		else
+			this.name = "참조룡";
+	}
+
 	public int takeDamage(int damage, boolean isSpecialAttack) {
 		int reducedDamage;
 		if (isSpecialAttack) {

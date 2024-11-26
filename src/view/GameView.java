@@ -753,11 +753,10 @@ public class GameView extends JPanel {
 		gameController.nextStage();
 		currentStage = gameController.getCurrentStage();
 		opponent = gameController.getOpponent();
-
 		updatePlayerInfo();
-		updateOpponentInfo();
 		updateStage(gameController.getCurrentStage());
 		updateOpponentImage();
+		updateOpponentInfo();
 
 		// 0.5초 딜레이
 		Timer timer = new Timer(500, new ActionListener() {
@@ -774,11 +773,17 @@ public class GameView extends JPanel {
 
 	private void updateOpponentImage() {
 		ImageIcon icon;
-		if (gameController.isBossMonster()) {
-			icon = new ImageIcon(getClass().getClassLoader().getResource("bossImage.png"));
-		} else {
+		if (currentStage <= 3)
 			icon = new ImageIcon(getClass().getClassLoader().getResource("opponentImage.png"));
-		}
+		else if (currentStage <= 6) {
+			icon = new ImageIcon(getClass().getClassLoader().getResource("opponentImage1.png"));
+			opponent.setOpponentName(1);
+		} else if (currentStage <= 9) {
+			icon = new ImageIcon(getClass().getClassLoader().getResource("opponentImage2.png"));
+			opponent.setOpponentName(2);
+		} else
+			icon = new ImageIcon(getClass().getClassLoader().getResource("bossImage.png"));
+
 		opponentImageLabel.setLocation(opponentImageLabel.getX(), opponentPanel.getHeight() / 2);
 
 		BufferedImage bufferedImage = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(),
