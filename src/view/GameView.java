@@ -56,7 +56,7 @@ public class GameView extends JPanel {
 		this.homeView = homeView;
 
 		// GameController 초기화
-		this.gameController = new GameController(player, new Opponent("상대", 100, 10, 10, 10, 10));
+		this.gameController = new GameController(player, new Opponent("상대", 100, 50, 10, 10, 10));
 
 		// 상대 정보 가져오기
 		this.opponent = gameController.getOpponent();
@@ -145,7 +145,7 @@ public class GameView extends JPanel {
 		skillAttackButton.addActionListener(e -> handleAttackButton(false));
 		defendButton.addActionListener(e -> playerDefend());
 		nextButton.addActionListener(e -> {
-		    int goldChange = 10; // 증가할 금액
+		    int goldChange = 20; // 증가할 금액
 		    player.increaseMoney(goldChange); // Player 객체의 금액 증가
 
 		    // 데이터베이스 업데이트

@@ -239,7 +239,7 @@ public class Player {
 		this.name = "기본 플레이어";
 		this.health = 100;
 		this.maxHealth = 100;
-		this.attackPower = 10;
+		this.attackPower = 1;
 		this.specialAttackPower = 0;
 		this.characterImage = null;
 		this.inventory = new ArrayList<>();
