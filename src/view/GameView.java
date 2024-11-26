@@ -577,6 +577,7 @@ public class GameView extends JPanel {
 	}
 
 	private void useItem(Item item, JButton itemButton) {
+		disableAllButtons();
 		if ("체력 회복 물약".equals(item.getName())) {
 			int healAmount = 30;
 			int actualHeal = Math.min(healAmount, player.getMaxHealth() - player.getHealth());
@@ -600,6 +601,15 @@ public class GameView extends JPanel {
 		}
 		inventoryPanel.revalidate();
 		inventoryPanel.repaint();
+		Timer timer = new Timer(500, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				enableAllButtons();
+				((Timer) e.getSource()).stop();
+			}
+		});
+		timer.setRepeats(false);
+		timer.start();
 	}
 
 	private void playerDefend() {
