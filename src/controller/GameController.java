@@ -39,7 +39,7 @@ public class GameController {
 		opponent.incrementTurnCount();
 		if (opponent instanceof BossMonster) {
 			BossMonster boss = (BossMonster) opponent;
-			if (boss.getTurnCount() % 5 == 0) {
+			if (boss.getTurnCount() % 4 == 0) {
 				return boss.specialAttack();
 			}
 		}
@@ -54,7 +54,7 @@ public class GameController {
 				// 플레이어와 보스 몬스터 레벨업
 				player.levelUp(currentStage * 8, currentStage * 3 + random.nextInt(6),
 						currentStage * 3 + random.nextInt(6), 1 + random.nextInt(3), 1 + random.nextInt(3));
-				opponent = new BossMonster("리오레이아", 1000, 80, 80, 35, 35); // 보스 몬스터 설정
+				opponent = new BossMonster("리오레이아", 1000, 160, 160, 35, 35); // 보스 몬스터 설정
 				System.out.println("보스 몬스터 등장: " + opponent.getName());
 			} else {
 				// 일반 상대 레벨업
