@@ -32,6 +32,10 @@ public class Opponent {
 	public int getHealth() {
 		return health;
 	}
+	
+	public int getDefense() {
+		return defense;
+	}
 
 	public int getMaxHealth() {
 		return maxHealth; // maxHealth 반환 메소드 추가
