@@ -54,7 +54,7 @@ public class GameView extends JPanel {
 		this.homeView = homeView;
 
 		// GameController 초기화
-		this.gameController = new GameController(player, new Opponent("상대", 100, 50, 10, 10, 10));
+		this.gameController = new GameController(player, new Opponent("도스쟈그라스", 100, 25, 25, 8, 8));
 
 		// 상대 정보 가져오기
 		this.opponent = gameController.getOpponent();
@@ -133,20 +133,7 @@ public class GameView extends JPanel {
 		attackButton.addActionListener(e -> handleAttackButton(true));
 		skillAttackButton.addActionListener(e -> handleAttackButton(false));
 		defendButton.addActionListener(e -> playerDefend());
-		nextButton.addActionListener(e -> {
-			int goldChange = 20; // 증가할 금액
-			player.increaseMoney(goldChange); // Player 객체의 금액 증가
-
-			// 데이터베이스 업데이트
-			boolean isUpdated = userController.updateGold(player.getId(), goldChange);
-			if (isUpdated) {
-				System.out.println("골드가 성공적으로 업데이트되었습니다.");
-			} else {
-				System.out.println("골드 업데이트 실패: 데이터베이스에 반영되지 않았습니다.");
-			}
-			goldCount = userController.getGold(player.getId());
-			nextStage(); // 다음 단계로 이동
-		});
+		nextButton.addActionListener(e -> nextStage());
 		homeButton.addActionListener(e -> returnToHome());
 		nextButton.setEnabled(false);
 		add(buttonPanel, BorderLayout.SOUTH);
@@ -259,7 +246,25 @@ public class GameView extends JPanel {
 	}
 
 	private void updateGoldLabel() {
-		goldLabel.setText("골드: " + goldCount); // goldLabel 업데이트
+		int previousGold = Integer.parseInt(goldLabel.getText().replace("골드: ", ""));
+		animateGoldLabel(previousGold, goldCount);
+	}
+
+	public void animateGoldLabel(int startValue, int endValue) {
+		Timer timer = new Timer(20, new ActionListener() {
+			private int currentValue = startValue;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (currentValue < endValue) {
+					currentValue += 1;
+					goldLabel.setText("골드: " + currentValue);
+				} else {
+					((Timer) e.getSource()).stop();
+				}
+			}
+		});
+		timer.start();
 	}
 
 	private void initializeOpponentPanel() {
@@ -351,13 +356,13 @@ public class GameView extends JPanel {
 		}
 
 		if (is_attack) {
-			int damage = player.getAttackPower() + random.nextInt(50);
+			int damage = player.getAttackPower() + random.nextInt(45);
 			int finalDamage = opponent.takeDamage(damage, false);
 
 			showAttackEffect();
 			showAttackDamage(finalDamage);
 		} else {
-			int damage = player.getSpecialAttackPower() + random.nextInt(50);
+			int damage = player.getSpecialAttackPower() + random.nextInt(45);
 			int finalDamage = opponent.takeDamage(damage, true);
 
 			showSpecialAttackEffect();
@@ -377,7 +382,16 @@ public class GameView extends JPanel {
 					Timer timer2 = new Timer(1000, new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							nextButton.setEnabled(true);
+							int goldChange = 20; // 증가할 금액
+							player.increaseMoney(goldChange); // Player 객체의 금액 증가
+							// 데이터베이스 업데이트
+							userController.updateGold(player.getId(), goldChange);
+							goldCount = userController.getGold(player.getId());
+							updateGoldLabel();
+							if (gameController.isLastStage())
+								endGame();
+							else
+								nextButton.setEnabled(true);
 							((Timer) e.getSource()).stop();
 						}
 					});
@@ -589,10 +603,6 @@ public class GameView extends JPanel {
 	}
 
 	private void playerDefend() {
-		if (!isPlayerTurn) {
-			JOptionPane.showMessageDialog(this, "상대의 턴입니다. 기다려 주세요.", "알림", JOptionPane.INFORMATION_MESSAGE);
-			return;
-		}
 		isPlayerDefending = true;
 		endPlayerTurn();
 	}
@@ -651,7 +661,7 @@ public class GameView extends JPanel {
 
 	private void scheduleOpponentTurn() {
 		javax.swing.Timer timer = new javax.swing.Timer(1500, (ActionEvent e) -> {
-			int damage = opponent.getAttackPower() + random.nextInt(20) + 5;
+			int damage = gameController.opponentAttack();
 
 			if (isPlayerDefending) {
 				showPlayerEffect("guard.gif");
@@ -665,7 +675,16 @@ public class GameView extends JPanel {
 				updatePlayerInfo();
 
 				if (player.getHealth() <= 0) {
-					handlePlayerDeath();
+					Timer timer3 = new Timer(1000, new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							handlePlayerDeath();
+							((Timer) e.getSource()).stop();
+						}
+					});
+					timer3.setRepeats(false);
+					timer3.start();
+
 					return;
 				}
 			}
@@ -721,30 +740,26 @@ public class GameView extends JPanel {
 
 	private void nextStage() {
 		nextButton.setEnabled(false);
-		if (!gameController.isLastStage()) {
-			gameController.nextStage();
-			currentStage = gameController.getCurrentStage();
-			opponent = gameController.getOpponent();
+		gameController.nextStage();
+		currentStage = gameController.getCurrentStage();
+		opponent = gameController.getOpponent();
 
-			updatePlayerInfo();
-			updateOpponentInfo();
-			updateStage(gameController.getCurrentStage());
-			updateOpponentImage();
-			updateGoldLabel();
+		updatePlayerInfo();
+		updateOpponentInfo();
+		updateStage(gameController.getCurrentStage());
+		updateOpponentImage();
 
-			// 0.5초 딜레이
-			Timer timer = new Timer(500, new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					startPlayerTurn();
-					((Timer) e.getSource()).stop();
-				}
-			});
-			timer.setRepeats(false);
-			timer.start();
-		} else {
-			endGame();
-		}
+		// 0.5초 딜레이
+		Timer timer = new Timer(500, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				startPlayerTurn();
+				((Timer) e.getSource()).stop();
+			}
+		});
+		timer.setRepeats(false);
+		timer.start();
+
 	}
 
 	private void updateOpponentImage() {
@@ -814,15 +829,11 @@ public class GameView extends JPanel {
 
 	private void handlePlayerDeath() {
 		disableAllButtons();
-
-		JOptionPane.showMessageDialog(this, "플레이어가 패배했습니다. 홈으로 돌아갑니다.");
-
-		returnToHome();
+		showEndGameImage("gameOver.png");
 	}
 
 	private void endGame() {
-		// 게임 클리어 이펙트
-		returnToHome();
+		showEndGameImage("gameClear.png");
 	}
 
 	public void restartGame() {
@@ -868,5 +879,31 @@ public class GameView extends JPanel {
 				component.setEnabled(true);
 			}
 		}
+	}
+
+	private void showEndGameImage(String filename) {
+		remove(playerLayeredPane);
+		remove(opponentLayeredPane);
+
+		// 중앙 배치를 위한 새로운 패널
+		JPanel centerPanel = new JPanel(new GridBagLayout());
+		centerPanel.setOpaque(false);
+
+		// 이미지를 표시할 라벨
+		JLabel imageLabel = new JLabel(new ImageIcon(getClass().getClassLoader().getResource(filename)));
+		centerPanel.add(imageLabel);
+
+		add(centerPanel, BorderLayout.CENTER);
+
+		// 홈으로
+		Timer timer = new Timer(3000, e -> {
+			returnToHome();
+		});
+		timer.setRepeats(false);
+		timer.start();
+
+		// 화면 갱신
+		revalidate();
+		repaint();
 	}
 }

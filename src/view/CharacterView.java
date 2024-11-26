@@ -6,6 +6,7 @@ import model.Character;
 import model.MyCharacter;
 import model.Player;
 import util.PopupLabelUtil;
+import util.UIUtils;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -156,6 +157,7 @@ public class CharacterView extends JPanel {
 			updateCharacterInDatabase(selectedCharacter.getName()); // 캐릭터 이름을 DB에 업데이트
 			homeView.enableBattleButton();
 		} else {
+			UIUtils.indicateError(selectButton);
 			PopupLabelUtil.showPopupLabel(this, "캐릭터를 선택해주세요.", "failSymbol.png");
 		}
 	}

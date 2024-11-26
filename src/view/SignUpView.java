@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 
 import controller.UserController;
 import util.PopupLabelUtil;
+import util.UIUtils;
 
 public class SignUpView extends JPanel {
 	private JTextField usernameField;
@@ -55,8 +56,8 @@ public class SignUpView extends JPanel {
 		passwordLabel.setBounds(250, 270, 100, 30);
 		passwordField.setBounds(250, 300, 300, 40);
 
-		signUpButton.setBounds(250, 370, 140, 40);
-		backButton.setBounds(410, 370, 140, 40);
+		signUpButton.setBounds(250, 450, 140, 40);
+		backButton.setBounds(410, 450, 140, 40);
 
 		signUpButton.addActionListener(e -> signUp());
 		backButton.addActionListener(e -> {
@@ -80,6 +81,7 @@ public class SignUpView extends JPanel {
 		String password = new String(passwordField.getPassword());
 
 		if (username.isEmpty() || password.isEmpty()) {
+			UIUtils.indicateError(signUpButton);
 			PopupLabelUtil.showPopupLabel(this, "아이디와 비밀번호를 입력하세요.", "failSymbol.png");
 			return;
 		}
@@ -95,6 +97,7 @@ public class SignUpView extends JPanel {
 			timer.setRepeats(false);
 			timer.start();
 		} else {
+			UIUtils.indicateError(signUpButton);
 			PopupLabelUtil.showPopupLabel(this, "이미 존재하는 아이디입니다.", "failSymbol.png");
 		}
 	}

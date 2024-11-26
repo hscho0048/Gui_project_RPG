@@ -112,11 +112,6 @@ public class HomeView extends JPanel {
 	}
 
 	private void showGameView() {
-		if (player == null) {
-			JOptionPane.showMessageDialog(this, "플레이어 정보가 없습니다. 다시 로그인해주세요.", "오류", JOptionPane.ERROR_MESSAGE);
-			return;
-		}
-
 		// GameView 생성 및 추가
 		GameView gameView = new GameView(player.getName(), userController, player, mainFrame, this);
 		mainFrame.getContentPane().add(gameView, "GameView");
@@ -127,11 +122,6 @@ public class HomeView extends JPanel {
 	}
 
 	private void showShopView() {
-		if (player == null) {
-			JOptionPane.showMessageDialog(this, "플레이어 정보가 없습니다. 다시 로그인해주세요.", "오류", JOptionPane.ERROR_MESSAGE);
-			return;
-		}
-
 		// ShopView가 추가되어 있는지 확인
 		for (Component component : mainFrame.getContentPane().getComponents()) {
 			if (component instanceof ShopView) {
@@ -155,11 +145,6 @@ public class HomeView extends JPanel {
 	}
 
 	private void showCharacterView() {
-		if (player == null) {
-			JOptionPane.showMessageDialog(this, "플레이어 정보가 없습니다. 기본 캐릭터로 설정됩니다.", "알림", JOptionPane.INFORMATION_MESSAGE);
-			player = new Player(0, "Guest", 100);
-		}
-
 		for (Component component : mainFrame.getContentPane().getComponents()) {
 			if (component instanceof CharacterView) {
 				((CharacterView) component).updatePlayerInfo();

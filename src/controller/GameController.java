@@ -34,41 +34,36 @@ public class GameController {
 		}
 	}
 
-	// 플레이어 방어 상태 처리
-	public void playerDefend() {
-		player.setDefending(true);
-	}
-
 	// 상대 공격 처리
 	public int opponentAttack() {
+		opponent.incrementTurnCount();
 		if (opponent instanceof BossMonster) {
 			BossMonster boss = (BossMonster) opponent;
 			if (boss.getTurnCount() % 5 == 0) {
 				return boss.specialAttack();
 			}
 		}
-		return opponent.getAttackPower() + random.nextInt(10) + 5;
+		return opponent.getAttackPower() + random.nextInt(40);
 	}
 
 	// 다음 스테이지로 전환
 	public void nextStage() {
 		if (currentStage < MAX_STAGE) {
 			currentStage++;
-
 			if (currentStage == 10) {
 				// 플레이어와 보스 몬스터 레벨업
-				player.levelUp(currentStage * 4, currentStage + random.nextInt(8), currentStage + random.nextInt(8),
-						1 + random.nextInt(4), 1 + random.nextInt(4));
-				opponent = new BossMonster("드래곤", 1000, 50, 50, 40, 40); // 보스 몬스터 설정
+				player.levelUp(currentStage * 8, currentStage * 3 + random.nextInt(6),
+						currentStage * 3 + random.nextInt(6), 1 + random.nextInt(3), 1 + random.nextInt(3));
+				opponent = new BossMonster("리오레이아", 1000, 80, 80, 35, 35); // 보스 몬스터 설정
 				System.out.println("보스 몬스터 등장: " + opponent.getName());
 			} else {
 				// 일반 상대 레벨업
-				opponent.levelUp(currentStage * 5, currentStage + random.nextInt(8), currentStage + random.nextInt(8),
-						1 + random.nextInt(4), 1 + random.nextInt(4));
+				opponent.levelUp(currentStage * 6, currentStage * 3 + random.nextInt(5),
+						currentStage * 3 + random.nextInt(5), 1 + random.nextInt(2), 1 + random.nextInt(2));
 
 				// 플레이어 레벨업
-				player.levelUp(currentStage * 4, currentStage + random.nextInt(8), currentStage + random.nextInt(8),
-						1 + random.nextInt(4), 1 + random.nextInt(4));
+				player.levelUp(currentStage * 8, currentStage * 3 + random.nextInt(6),
+						currentStage * 3 + random.nextInt(6), 1 + random.nextInt(3), 1 + random.nextInt(3));
 			}
 		}
 	}
@@ -77,9 +72,6 @@ public class GameController {
 		player.reset(); // 플레이어 상태 초기화
 		opponent.reset(); // 상대 상태 초기화
 		currentStage = 1; // 스테이지를 처음으로 초기화
-		if (opponent instanceof BossMonster) {
-			opponent = new Opponent("상대", 100, 10, 10, 10, 10); // 일반 몬스터로 교체
-		}
 	}
 
 	// 현재 스테이지 반환
