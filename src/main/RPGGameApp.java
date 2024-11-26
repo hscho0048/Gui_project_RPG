@@ -17,7 +17,8 @@ public class RPGGameApp {
 			// JFrame 설정
 			JFrame mainFrame = new JFrame("RPG Game");
 			mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			mainFrame.setSize(800, 600);
+			// 세로 크기 조정
+			mainFrame.setSize(800, 800);
 			mainFrame.setLayout(new CardLayout());
 
 			// View 초기화
