@@ -44,8 +44,6 @@ public class GameView extends JPanel {
 	private int currentStage = 1; // 초기 스테이지 수
 	private int goldCount;
 
-
-
 	public GameView(String playerName, UserController userController, Player player, JFrame mainFrame,
 			HomeView homeView) {
 		this.mainFrame = mainFrame;
@@ -73,53 +71,44 @@ public class GameView extends JPanel {
 	}
 
 	private void initializeUI() {
-	    // 상단 패널 (스테이지 및 플레이어 정보 포함)
-	    JPanel topPanel = new JPanel(new BorderLayout());
-	    topPanel.setBorder(BorderFactory.createEmptyBorder(5, 20, 5, 20));
+		// 상단 패널 (스테이지 및 플레이어 정보 포함)
+		JPanel topPanel = new JPanel(new BorderLayout());
+		topPanel.setBorder(BorderFactory.createEmptyBorder(5, 20, 5, 20));
 
-	    // 스테이지 레이블 초기화
-	    stageLabel = new JLabel("Stage " + gameController.getCurrentStage());
-	    stageLabel.setFont(new Font("Dialog", Font.BOLD, 24));
-	    stageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		// 스테이지 레이블 초기화
+		stageLabel = new JLabel("Stage " + gameController.getCurrentStage());
+		stageLabel.setFont(new Font("Dialog", Font.BOLD, 24));
+		stageLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-	    // 턴 수 레이블 초기화
-	    turnCountLabel = new JLabel("턴 수: " + turnCount);
-	    turnCountLabel.setFont(new Font("Dialog", Font.BOLD, 16));
-	    turnCountLabel.setHorizontalAlignment(SwingConstants.LEFT);
-	    turnCountLabel.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
+		// 턴 수 레이블 초기화
+		turnCountLabel = new JLabel("턴 수: " + turnCount);
+		turnCountLabel.setFont(new Font("Dialog", Font.BOLD, 16));
+		turnCountLabel.setHorizontalAlignment(SwingConstants.LEFT);
+		turnCountLabel.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
 
-	    // 골드 레이블 초기화
-	    goldCount = userController.getGold(player.getId());
-	    goldLabel = new JLabel("골드: " + goldCount);
-	    goldLabel.setFont(new Font("Dialog", Font.BOLD, 16));
-	    goldLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-	    goldLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 20));
+		// 골드 레이블 초기화
+		goldCount = userController.getGold(player.getId());
+		goldLabel = new JLabel("골드: " + goldCount);
+		goldLabel.setFont(new Font("Dialog", Font.BOLD, 16));
+		goldLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+		goldLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 20));
 
-	    // 상단 패널 구성
-	    topPanel.add(stageLabel, BorderLayout.CENTER);
-	    topPanel.add(turnCountLabel, BorderLayout.WEST);
-	    topPanel.add(goldLabel, BorderLayout.EAST);
-	    topPanel.setPreferredSize(new Dimension(800, 50));
+		// 상단 패널 구성
+		topPanel.add(stageLabel, BorderLayout.CENTER);
+		topPanel.add(turnCountLabel, BorderLayout.WEST);
+		topPanel.add(goldLabel, BorderLayout.EAST);
+		topPanel.setPreferredSize(new Dimension(800, 50));
 
-	    // 전체 레이아웃에 상단 패널 추가
-	    add(topPanel, BorderLayout.NORTH);
+		// 전체 레이아웃에 상단 패널 추가
+		add(topPanel, BorderLayout.NORTH);
 
-	    // 플레이어 패널 초기화
-	    playerPanel = new JPanel();
-	    playerPanel.setLayout(new BoxLayout(playerPanel, BoxLayout.Y_AXIS));
-	    playerPanel.setOpaque(false);
+		// 플레이어 정보 및 상대 패널 초기화
+		initializePlayerPanel();
+		initializeOpponentPanel();
 
-	    // 플레이어 패널을 레이아웃에 추가
-	    add(playerPanel, BorderLayout.CENTER);
-
-	    // 플레이어 정보 및 상대 패널 초기화
-	    initializePlayerPanel();
-	    initializeOpponentPanel();
-
-	    // 로그와 버튼 초기화
-	    initializeLogAndButtons();
+		// 로그와 버튼 초기화
+		initializeLogAndButtons();
 	}
-
 
 	// 로그와 버튼 초기화 메서드
 	private void initializeLogAndButtons() {
@@ -145,19 +134,18 @@ public class GameView extends JPanel {
 		skillAttackButton.addActionListener(e -> handleAttackButton(false));
 		defendButton.addActionListener(e -> playerDefend());
 		nextButton.addActionListener(e -> {
-		    int goldChange = 20; // 증가할 금액
-		    player.increaseMoney(goldChange); // Player 객체의 금액 증가
+			int goldChange = 20; // 증가할 금액
+			player.increaseMoney(goldChange); // Player 객체의 금액 증가
 
-		    // 데이터베이스 업데이트
-		    boolean isUpdated = userController.updateGold(player.getId(), goldChange);
-		    if (isUpdated) {
-		        System.out.println("골드가 성공적으로 업데이트되었습니다.");
-		    } else {
-		        System.out.println("골드 업데이트 실패: 데이터베이스에 반영되지 않았습니다.");
-		    }
-		    goldCount += 10; // goldCount를 10씩 증가
-		    goldLabel.setText("골드: " + goldCount); // goldLabel 업데이트
-		    nextStage(); // 다음 단계로 이동
+			// 데이터베이스 업데이트
+			boolean isUpdated = userController.updateGold(player.getId(), goldChange);
+			if (isUpdated) {
+				System.out.println("골드가 성공적으로 업데이트되었습니다.");
+			} else {
+				System.out.println("골드 업데이트 실패: 데이터베이스에 반영되지 않았습니다.");
+			}
+			goldCount = userController.getGold(player.getId());
+			nextStage(); // 다음 단계로 이동
 		});
 		homeButton.addActionListener(e -> returnToHome());
 		nextButton.setEnabled(false);
@@ -174,7 +162,7 @@ public class GameView extends JPanel {
 		playerImageLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		playerImageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		playerImageLabel.setOpaque(true);
-		playerInfoLabel = new JLabel("플레이어: " + player.getName());
+		playerInfoLabel = new JLabel(player.getName());
 		playerInfoLabel.setPreferredSize(new Dimension(300, 20));
 		playerInfoLabel.setMaximumSize(new Dimension(300, 20));
 		playerInfoLabel.setMinimumSize(new Dimension(300, 20));
@@ -204,19 +192,19 @@ public class GameView extends JPanel {
 
 		playerLayeredPane = new JLayeredPane();
 		playerLayeredPane.setPreferredSize(new Dimension(300, 470));
-		
-		// 스탯 패널 추가
-	    JPanel statPanel = new JPanel();
-	    statPanel.setLayout(new BoxLayout(statPanel, BoxLayout.X_AXIS));
-	    statPanel.setPreferredSize(new Dimension(300, 100));
-	    statPanel.add(createStatBox("공격력", player.getAttackPower(), Color.RED));
-	    statPanel.add(Box.createRigidArea(new Dimension(10, 0)));
-	    statPanel.add(createStatBox("방어력", player.getDefensePower(), Color.BLUE));
-	    statPanel.add(Box.createRigidArea(new Dimension(10, 0)));
-	    statPanel.add(createStatBox("특공", player.getSpecialAttackPower(), Color.GREEN));
 
-	    inventoryPanel.add(statPanel);
-	    inventoryPanel.add(Box.createRigidArea(new Dimension(0, 10))); // 여백 추가
+		// 스탯 패널 추가
+		JPanel statPanel = new JPanel();
+		statPanel.setLayout(new BoxLayout(statPanel, BoxLayout.X_AXIS));
+		statPanel.setPreferredSize(new Dimension(300, 100));
+		statPanel.add(createStatBox("공격력", player.getAttackPower(), Color.RED));
+		statPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+		statPanel.add(createStatBox("방어력", player.getDefensePower(), Color.BLUE));
+		statPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+		statPanel.add(createStatBox("특공", player.getSpecialAttackPower(), Color.GREEN));
+
+		inventoryPanel.add(statPanel);
+		inventoryPanel.add(Box.createRigidArea(new Dimension(0, 10))); // 여백 추가
 
 		// 플레이어 패널 구성
 		playerPanel = new JPanel();
@@ -225,11 +213,10 @@ public class GameView extends JPanel {
 		playerPanel.add(playerHealthBar);
 		playerPanel.add(playerImageLabel);
 		playerPanel.add(statPanel); // 스탯 패널 추가
-		playerPanel.setMaximumSize(new Dimension(300, 280));
+		playerPanel.setMaximumSize(new Dimension(300, 380));
 		playerPanel.setOpaque(false);
-		
 
-		playerPanel.setBounds(0, 190, 300, 280);
+		playerPanel.setBounds(0, 190, 300, 380);
 		scrollPane.setBounds(0, 0, 300, 190);
 
 		playerLayeredPane.add(playerPanel, JLayeredPane.DEFAULT_LAYER);
@@ -270,10 +257,10 @@ public class GameView extends JPanel {
 		inventoryPanel.revalidate(); // 인벤토리 갱신
 		inventoryPanel.repaint();
 	}
-	private void updateGoldLabel() {
-	    goldLabel.setText("골드: " + goldCount); // goldLabel 업데이트
-	}
 
+	private void updateGoldLabel() {
+		goldLabel.setText("골드: " + goldCount); // goldLabel 업데이트
+	}
 
 	private void initializeOpponentPanel() {
 		opponentImageLabel = new JLabel(new ImageIcon(getClass().getClassLoader().getResource("opponentImage.png")));
@@ -327,60 +314,35 @@ public class GameView extends JPanel {
 		healthBar.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
 		healthBar.setFont(new Font("Dialog", Font.BOLD, 12));
 	}
-	// 스탯 패널 생성 메서드
-	private JPanel createStatPanel() {
-	    JPanel statPanel = new JPanel();
-	    statPanel.setLayout(new BoxLayout(statPanel, BoxLayout.X_AXIS)); // 가로로 배치
-	    statPanel.setPreferredSize(new Dimension(300, 100));
-	    statPanel.setMaximumSize(new Dimension(300, 100)); // 스탯 패널 크기 고정
-	    statPanel.setBorder(BorderFactory.createTitledBorder(
-	        BorderFactory.createLineBorder(Color.BLACK),
-	        "스탯 정보",
-	        TitledBorder.CENTER,
-	        TitledBorder.TOP,
-	        new Font("Dialog", Font.BOLD, 16)
-	    ));
-
-	    // 스탯 박스 추가
-	    statPanel.add(createStatBox("공격력", player.getAttackPower(), Color.RED));
-	    statPanel.add(Box.createRigidArea(new Dimension(10, 0))); // 간격 추가
-	    statPanel.add(createStatBox("방어력", player.getDefensePower(), Color.BLUE));
-	    statPanel.add(Box.createRigidArea(new Dimension(10, 0))); // 간격 추가
-	    statPanel.add(createStatBox("특공", player.getSpecialAttackPower(), Color.GREEN));
-
-	    return statPanel;
-	}
 
 	// 스탯 박스 생성 메서드
 	private JPanel createStatBox(String title, int value, Color color) {
-	    JPanel statBox = new JPanel();
-	    statBox.setLayout(new BoxLayout(statBox, BoxLayout.Y_AXIS)); // 세로 정렬
-	    statBox.setPreferredSize(new Dimension(80, 80)); // 박스 크기 설정
-	    statBox.setBackground(color);
-	    statBox.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // 테두리 설정
+		JPanel statBox = new JPanel();
+		statBox.setLayout(new BoxLayout(statBox, BoxLayout.Y_AXIS)); // 세로 정렬
+		statBox.setPreferredSize(new Dimension(80, 80)); // 박스 크기 설정
+		statBox.setBackground(color);
+		statBox.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // 테두리 설정
 
-	    // 타이틀 라벨
-	    JLabel titleLabel = new JLabel(title);
-	    titleLabel.setFont(new Font("Dialog", Font.BOLD, 12));
-	    titleLabel.setForeground(Color.WHITE);
-	    titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		// 타이틀 라벨
+		JLabel titleLabel = new JLabel(title);
+		titleLabel.setFont(new Font("Dialog", Font.BOLD, 12));
+		titleLabel.setForeground(Color.WHITE);
+		titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-	    // 값 라벨
-	    JLabel valueLabel = new JLabel(String.valueOf(value));
-	    valueLabel.setFont(new Font("Dialog", Font.BOLD, 16));
-	    valueLabel.setForeground(Color.WHITE);
-	    valueLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		// 값 라벨
+		JLabel valueLabel = new JLabel(String.valueOf(value));
+		valueLabel.setFont(new Font("Dialog", Font.BOLD, 16));
+		valueLabel.setForeground(Color.WHITE);
+		valueLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-	    // 박스에 라벨 추가
-	    statBox.add(Box.createRigidArea(new Dimension(0, 5))); // 상단 여백
-	    statBox.add(titleLabel);
-	    statBox.add(Box.createRigidArea(new Dimension(0, 5))); // 타이틀과 값 간 여백
-	    statBox.add(valueLabel);
+		// 박스에 라벨 추가
+		statBox.add(Box.createRigidArea(new Dimension(0, 5))); // 상단 여백
+		statBox.add(titleLabel);
+		statBox.add(Box.createRigidArea(new Dimension(0, 5))); // 타이틀과 값 간 여백
+		statBox.add(valueLabel);
 
-	    return statBox;
+		return statBox;
 	}
-
-
 
 	private void handleAttackButton(boolean is_attack) {
 		if (!isPlayerTurn) {
@@ -830,17 +792,16 @@ public class GameView extends JPanel {
 	}
 
 	private void updatePlayerInfo() {
-	    // 플레이어 정보 레이블 업데이트
-	    playerInfoLabel.setText("플레이어: " + player.getName() + " | 금액: " + player.getMoney());
+		// 플레이어 정보 레이블 업데이트
+		playerInfoLabel.setText(player.getName());
 
-	    // 체력 바 업데이트
-	    setupHealthBar(playerHealthBar, player.getHealth(), player.getMaxHealth());
+		// 체력 바 업데이트
+		setupHealthBar(playerHealthBar, player.getHealth(), player.getMaxHealth());
 
-	    // 화면 갱신
-	    revalidate();
-	    repaint();
+		// 화면 갱신
+		revalidate();
+		repaint();
 	}
-
 
 	private void updateOpponentInfo() {
 		opponentInfoLabel.setText(opponent.getName());
