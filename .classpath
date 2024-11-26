@@ -7,8 +7,5 @@
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="resources"/>
-	<classpathentry kind="lib" path="C:/Users/choho/Downloads/sqlite-jdbc-3.47.0.0.jar"/>
-	<classpathentry kind="lib" path="C:/Users/choho/Downloads/slf4j-simple-2.0.9.jar"/>
-	<classpathentry kind="lib" path="C:/Users/choho/Downloads/slf4j-api-2.0.9.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
