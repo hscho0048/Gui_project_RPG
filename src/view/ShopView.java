@@ -45,7 +45,7 @@ public class ShopView extends JPanel {
 		setLayout(new BorderLayout());
 
 		layeredPane = new JLayeredPane();
-		layeredPane.setPreferredSize(new Dimension(800, 600));
+		layeredPane.setPreferredSize(new Dimension(800, 700));
 
 		// UI 초기화 메서드 호출
 		initializeUI();
@@ -80,7 +80,7 @@ public class ShopView extends JPanel {
 		JScrollPane inventoryScrollPane = new JScrollPane(inventoryPanel);
 		inventoryScrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK),
 				"인벤토리", TitledBorder.CENTER, TitledBorder.TOP, new Font("Dialog", Font.BOLD, 16)));
-		inventoryScrollPane.setBounds(20, 70, 200, 430);
+		inventoryScrollPane.setBounds(20, 70, 200, 530);
 		updateInventoryPanel();
 		layeredPane.add(inventoryScrollPane, JLayeredPane.DEFAULT_LAYER);
 
@@ -97,12 +97,11 @@ public class ShopView extends JPanel {
 		JScrollPane itemScrollPane = new JScrollPane(itemPanel);
 		itemScrollPane.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "상품 목록",
 				TitledBorder.CENTER, TitledBorder.TOP, new Font("Dialog", Font.BOLD, 16)));
-		itemScrollPane.setBounds(240, 70, 540, 430);
+		itemScrollPane.setBounds(240, 70, 540, 530);
 		layeredPane.add(itemScrollPane, JLayeredPane.DEFAULT_LAYER);
 
 		// 버튼 패널
 		JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
-		buttonPanel.setBounds(0, 520, 800, 60);
 
 		Dimension buttonSize = new Dimension(100, 40);
 		buyButton = new JButton("구매");
@@ -116,7 +115,7 @@ public class ShopView extends JPanel {
 		backButton.addActionListener(e -> handleBack());
 		buttonPanel.add(buyButton);
 		buttonPanel.add(backButton);
-		buttonPanel.setBounds(0, 500, 800, 50);
+		buttonPanel.setBounds(0, 600, 800, 50);
 		layeredPane.add(buttonPanel, JLayeredPane.DEFAULT_LAYER);
 	}
 

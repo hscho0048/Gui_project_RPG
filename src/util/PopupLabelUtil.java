@@ -20,7 +20,7 @@ public class PopupLabelUtil {
 
 			// 새로운 LayeredPane 생성
 			layeredPane = new JLayeredPane();
-			layeredPane.setBounds(0, 0, 800, 600);
+			layeredPane.setBounds(0, 0, 800, 700);
 
 			// 컨테이너 내용을 LayeredPane으로 이동
 			container.removeAll();
@@ -28,7 +28,7 @@ public class PopupLabelUtil {
 
 			// 원래 컴포넌트들을 DEFAULT_LAYER에 추가
 			JPanel originalPanel = new JPanel(originalLayout);
-			originalPanel.setBounds(0, 0, 800, 600);
+			originalPanel.setBounds(0, 0, 800, 700);
 			for (Component comp : originalComponents) {
 				originalPanel.add(comp);
 			}
@@ -46,7 +46,7 @@ public class PopupLabelUtil {
 			}
 		};
 		darkBackground.setOpaque(false);
-		darkBackground.setBounds(0, 0, 800, 600);
+		darkBackground.setBounds(0, 0, 800, 700);
 
 		// 마우스 이벤트 가로채기
 		darkBackground.addMouseListener(new MouseAdapter() {
@@ -87,7 +87,7 @@ public class PopupLabelUtil {
 		int width = 400;
 		int height = 200;
 		int x = (800 - width) / 2;
-		int y = (600 - height) / 2;
+		int y = (700 - height) / 2;
 		contentPanel.setBounds(x, y, width, height);
 
 		// 레이어드판에 추가

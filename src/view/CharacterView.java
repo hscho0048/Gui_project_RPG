@@ -30,7 +30,7 @@ public class CharacterView extends JPanel {
 
 		// LayeredPane 초기화
 		layeredPane = new JLayeredPane();
-		layeredPane.setPreferredSize(new Dimension(800, 600));
+		layeredPane.setPreferredSize(new Dimension(800, 700));
 
 		// 상단 패널 (타이틀 + 플레이어 정보)
 		JPanel topPanel = new JPanel(new BorderLayout());
@@ -55,7 +55,7 @@ public class CharacterView extends JPanel {
 		characterPanel = new JPanel(new GridLayout(0, 2, 30, 30));
 		characterPanel.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50)); // 여백 추가
 		characterPanel.setOpaque(false);
-		characterPanel.setBounds(0, 100, 800, 380);
+		characterPanel.setBounds(0, 100, 800, 480);
 
 		// MyCharacter에서 캐릭터 목록 가져오기
 		List<Character> characters = myCharacter.getCharacter();
@@ -71,7 +71,7 @@ public class CharacterView extends JPanel {
 		// 버튼 패널
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 10));
-		buttonPanel.setBounds(0, 500, 800, 100);
+		buttonPanel.setBounds(0, 600, 800, 100);
 
 		selectButton = new JButton("선택");
 		backButton = new JButton("홈으로");

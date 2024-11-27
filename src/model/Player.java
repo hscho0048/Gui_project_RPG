@@ -45,11 +45,13 @@ public class Player {
 	// 공격력 증가
 	public void increaseAttackPower(int amount) {
 		attackPower += amount;
+		specialAttackPower += amount;
 	}
 
 	// 방어력 증가
 	public void increaseDefencePower(int amount) {
-		attackPower += amount;
+		defensePower += amount;
+		specialDefensePower += amount;
 	}
 
 	// Getter and Setter

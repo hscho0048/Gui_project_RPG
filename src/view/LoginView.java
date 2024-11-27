@@ -27,7 +27,7 @@ public class LoginView extends JPanel {
 		this.userController = userController;
 		this.mainFrame = mainFrame;
 
-		setPreferredSize(new Dimension(800, 600));
+		setPreferredSize(new Dimension(800, 700));
 		setLayout(null); // 절대 위치 사용
 
 		// 타이틀 라벨 생성 및 설정
@@ -40,7 +40,7 @@ public class LoginView extends JPanel {
 
 		JPanel centerPanel = new JPanel();
 		centerPanel.setLayout(null); // 절대 위치 사용
-		centerPanel.setBounds(0, 0, 800, 600);
+		centerPanel.setBounds(0, 0, 800, 700);
 
 		JLabel usernameLabel = new JLabel("아이디:");
 		usernameLabel.setFont(new Font("Dialog", Font.BOLD, 16));
@@ -63,8 +63,8 @@ public class LoginView extends JPanel {
 		passwordLabel.setBounds(250, 270, 100, 30);
 		passwordField.setBounds(250, 300, 300, 40);
 
-		loginButton.setBounds(250, 450, 140, 40);
-		signUpButton.setBounds(410, 450, 140, 40);
+		loginButton.setBounds(250, 550, 140, 40);
+		signUpButton.setBounds(410, 550, 140, 40);
 
 		loginButton.addActionListener(e -> login());
 		signUpButton.addActionListener(e -> {
