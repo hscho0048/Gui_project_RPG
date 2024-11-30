@@ -18,12 +18,10 @@ public class CharacterView extends JPanel {
 	private JLayeredPane layeredPane;
 	private JLabel playerInfoLabel;
 	private JPanel characterPanel;
-	private MyCharacter myCharacter;
 	private HomeView homeView;
 
 	public CharacterView(Player player, MyCharacter myCharacter, HomeView homeView) {
 		this.player = player;
-		this.myCharacter = myCharacter;
 		this.homeView = homeView;
 
 		setLayout(new BorderLayout());
@@ -177,12 +175,6 @@ public class CharacterView extends JPanel {
 				"플레이어: " + player.getName() + " | 직업: " + (player.isJobEmpty() ? "없음" : player.getCharacterName()));
 		revalidate();
 		repaint();
-	}
-
-	// Home으로 돌아가기
-	private void returnToHome() {
-		CardLayout cardLayout = (CardLayout) homeView.getParent().getLayout();
-		cardLayout.show(homeView.getParent(), "HomeView");
 	}
 
 	private void handleBack() {

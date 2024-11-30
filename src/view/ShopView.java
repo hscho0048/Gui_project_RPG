@@ -24,15 +24,13 @@ public class ShopView extends JPanel {
 	private UserController userController;
 	private Shop shop;
 	private JFrame mainFrame; // CardLayout 관리용 프레임
-	private GameView gameView;
-	private HomeView homeView;
+	protected HomeView homeView;
 
 	public ShopView(Player player, UserController userController, GameView gameView, JFrame mainFrame,
 			HomeView homeView) {
 		this.homeView = homeView;
 		this.player = player;
 		this.userController = userController;
-		this.gameView = gameView; // GameView 초기화
 		this.mainFrame = mainFrame;
 		this.shop = new Shop();
 

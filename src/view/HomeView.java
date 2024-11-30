@@ -12,7 +12,6 @@ import model.Player;
 
 public class HomeView extends JPanel {
 	private JButton battleButton, shopButton, characterSelectButton;
-	private JTextArea rankingTextArea;
 	private UserController userController;
 	private JFrame mainFrame;
 	private MyCharacter myCharacter;
@@ -20,16 +19,12 @@ public class HomeView extends JPanel {
 	private JTable rankingTable;
 
 	private GameView gameView;
-	private ShopView shopView;
 
 	public HomeView(UserController userController, JFrame mainFrame, MyCharacter myCharacter, Player player) {
 		this.userController = userController;
 		this.mainFrame = mainFrame;
 		this.myCharacter = myCharacter;
 		this.player = player;
-
-		// 디버깅: HomeView에서 받은 userId 확인
-		System.out.println("디버깅: HomeView에서 받은 userId: " + player.getId());
 
 		setLayout(new BorderLayout()); // 전체 레이아웃 설정
 
@@ -85,8 +80,6 @@ public class HomeView extends JPanel {
 	// 대결 버튼 활성화 메서드
 	public void enableBattleButton() {
 		battleButton.setEnabled(true);
-		System.out.println("대결 버튼 활성화");
-
 	}
 
 	// 대결 버튼 비활성화 메서드
@@ -97,9 +90,6 @@ public class HomeView extends JPanel {
 	// 캐릭터 선택 후 업데이트
 	public boolean updateCharacter(String characterName) {
 		int userId = player.getId(); // 로그인된 플레이어의 ID를 가져옵니다.
-
-		// 디버깅: ID 확인
-		System.out.println("디버깅: HomeView에서 받은 userId: " + userId);
 
 		if (userId == 0) {
 			JOptionPane.showMessageDialog(this, "플레이어 ID가 잘못 설정되었습니다.", "오류", JOptionPane.ERROR_MESSAGE);
@@ -199,42 +189,5 @@ public class HomeView extends JPanel {
 			JOptionPane.showMessageDialog(this, "랭킹 데이터를 처리하는 중 오류 발생: " + e.getMessage(), "오류",
 					JOptionPane.ERROR_MESSAGE);
 		}
-	}
-
-	private void initializeRankingTableAndButtons() {
-		// 버튼 패널 초기화
-		JPanel buttonPanel = new JPanel(new GridLayout(3, 1));
-		battleButton = new JButton("대결");
-		battleButton.addActionListener(e -> showGameView());
-		shopButton = new JButton("상점");
-		shopButton.addActionListener(e -> showShopView());
-		characterSelectButton = new JButton("캐릭터 선택");
-		characterSelectButton.addActionListener(e -> showCharacterView());
-		buttonPanel.add(battleButton);
-		buttonPanel.add(shopButton);
-		buttonPanel.add(characterSelectButton);
-
-		// 테이블 열 제목
-		String[] columnNames = { "순위", "플레이어", "캐릭터", "구매 아이템", "턴수", "완료한 스테이지" };
-		DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0);
-
-		rankingTable = new JTable(tableModel);
-		rankingTable.setEnabled(false);
-		rankingTable.getTableHeader().setReorderingAllowed(false);
-		rankingTable.getTableHeader().setResizingAllowed(false);
-
-		JScrollPane scrollPane = new JScrollPane(rankingTable);
-		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-
-		JPanel rankingPanel = new JPanel(new BorderLayout());
-		rankingPanel.setBorder(BorderFactory.createTitledBorder("랭킹"));
-		rankingPanel.add(scrollPane, BorderLayout.CENTER);
-
-		JPanel combinedPanel = new JPanel(new BorderLayout());
-		combinedPanel.add(buttonPanel, BorderLayout.WEST);
-		combinedPanel.add(rankingPanel, BorderLayout.CENTER);
-
-		add(combinedPanel, BorderLayout.CENTER);
-		updateRanking();
 	}
 }

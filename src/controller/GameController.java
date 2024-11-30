@@ -55,7 +55,6 @@ public class GameController {
 				player.levelUp(currentStage * 8, currentStage * 3 + random.nextInt(6),
 						currentStage * 3 + random.nextInt(6), 1 + random.nextInt(3), 1 + random.nextInt(3));
 				opponent = new BossMonster("리오레이아", 1000, 200, 200, 35, 35); // 보스 몬스터 설정
-				System.out.println("보스 몬스터 등장: " + opponent.getName());
 			} else {
 				// 일반 상대 레벨업
 				opponent.levelUp(currentStage * 7, currentStage * 3 + random.nextInt(10),

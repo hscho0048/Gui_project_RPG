@@ -19,7 +19,6 @@ import model.Opponent;
 
 public class GameView extends JPanel {
 	private HomeView homeView; // HomeView 참조
-	private ShopView shopView; // ShopView 참조
 	private JLabel playerImageLabel, opponentImageLabel;
 	private JLabel playerInfoLabel, opponentInfoLabel, stageLabel, goldLabel;
 	private JProgressBar playerHealthBar, opponentHealthBar;
