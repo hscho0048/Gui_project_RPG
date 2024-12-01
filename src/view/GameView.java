@@ -39,6 +39,7 @@ public class GameView extends JPanel {
 	private JPanel inventoryPanel; // 아이템 인벤토리 패널
 	private JLabel turnCountLabel; // 턴 수를 표시할 레이블
 	private int turnCount = 1; // 초기 턴 수
+	private int clearTurn = 0;
 	private int currentStage = 1; // 초기 스테이지 수
 	private int goldCount;
 	private JPanel playerStatPanel, opponentStatPanel; // 스탯 패널
@@ -839,6 +840,7 @@ public class GameView extends JPanel {
 	private void nextStage() {
 		nextButton.setEnabled(false);
 		gameController.nextStage();
+		clearTurn = turnCount;
 		currentStage = gameController.getCurrentStage();
 		opponent = gameController.getOpponent();
 		updatePlayerInfo();
@@ -963,11 +965,13 @@ public class GameView extends JPanel {
 	}
 
 	private void returnToHome() {
-		userController.updateTurns(player.getId(), turnCount);
-		if (isPlayerDeath)
+		if (isPlayerDeath) {
+			userController.updateTurns(player.getId(), clearTurn);
 			userController.updateCurrentStageInDatabase(player.getId(), currentStage - 1);
-		else
+		} else {
+			userController.updateTurns(player.getId(), turnCount);
 			userController.updateCurrentStageInDatabase(player.getId(), currentStage);
+		}
 		homeView.updateRanking(); // 홈 화면으로 돌아오며 랭킹 갱신
 		restartGame();
 		userController.clearUserItems(player.getId());
