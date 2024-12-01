@@ -207,7 +207,7 @@ public class Player {
 				return new Player(id, username, money); // Player 객체 생성
 			}
 		} catch (SQLException e) {
-			System.out.println("플레이어 정보 조회 실패: " + e.getMessage());
+	        throw new RuntimeException("플레이어 정보 조회 실패", e);
 		}
 		return null; // 실패 시 null 반환
 	}

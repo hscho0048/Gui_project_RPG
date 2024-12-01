@@ -24,15 +24,13 @@ public class ShopView extends JPanel {
 	private UserController userController;
 	private Shop shop;
 	private JFrame mainFrame; // CardLayout 관리용 프레임
-	private GameView gameView;
-	private HomeView homeView;
+	protected HomeView homeView;
 
 	public ShopView(Player player, UserController userController, GameView gameView, JFrame mainFrame,
 			HomeView homeView) {
 		this.homeView = homeView;
 		this.player = player;
 		this.userController = userController;
-		this.gameView = gameView; // GameView 초기화
 		this.mainFrame = mainFrame;
 		this.shop = new Shop();
 
@@ -217,7 +215,7 @@ public class ShopView extends JPanel {
 		if (updatedGold != -1) { // 유효한 값일 경우에만 업데이트
 			player.setMoney(updatedGold); // Player 객체의 money 필드를 갱신
 		} else {
-			System.out.println("골드 정보를 불러오는 데 실패했습니다.");
+			throw new RuntimeException("골드 정보 불러오기 실패");
 		}
 
 		// UI에 갱신된 정보를 반영 (goldLabel 제거)

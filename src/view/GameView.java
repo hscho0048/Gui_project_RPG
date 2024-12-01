@@ -14,16 +14,16 @@ import java.awt.image.BufferedImage;
 import controller.GameController;
 import controller.UserController;
 import model.Player;
+import util.PopupLabelUtil;
 import model.Item;
 import model.Opponent;
 
 public class GameView extends JPanel {
 	private HomeView homeView; // HomeView 참조
-	private ShopView shopView; // ShopView 참조
 	private JLabel playerImageLabel, opponentImageLabel;
 	private JLabel playerInfoLabel, opponentInfoLabel, stageLabel, goldLabel;
 	private JProgressBar playerHealthBar, opponentHealthBar;
-	private JButton attackButton, skillAttackButton, defendButton, nextButton, homeButton;
+	private JButton attackButton, skillAttackButton, defendButton, nextButton;
 	private JPanel playerPanel, opponentPanel;
 	private Player player;
 	private JLayeredPane playerLayeredPane;
@@ -33,6 +33,7 @@ public class GameView extends JPanel {
 	private Random random;
 	private boolean isPlayerTurn = true; // 턴제 구현
 	private boolean isPlayerDefending;
+	private boolean isPlayerDeath = false;
 	private JFrame mainFrame;
 	private GameController gameController;
 	private JPanel inventoryPanel; // 아이템 인벤토리 패널
@@ -121,8 +122,7 @@ public class GameView extends JPanel {
 		skillAttackButton = new JButton("특수공격");
 		defendButton = new JButton("방어");
 		nextButton = new JButton("다음");
-		homeButton = new JButton("홈으로");
-		JButton[] buttons = { attackButton, skillAttackButton, defendButton, nextButton, homeButton };
+		JButton[] buttons = { attackButton, skillAttackButton, defendButton, nextButton };
 		for (JButton button : buttons) {
 			button.setPreferredSize(buttonSize);
 			button.setFont(buttonFont);
@@ -134,7 +134,6 @@ public class GameView extends JPanel {
 		skillAttackButton.addActionListener(e -> handleAttackButton(false));
 		defendButton.addActionListener(e -> playerDefend());
 		nextButton.addActionListener(e -> nextStage());
-		homeButton.addActionListener(e -> returnToHome());
 		nextButton.setEnabled(false);
 		add(buttonPanel, BorderLayout.SOUTH);
 	}
@@ -441,7 +440,7 @@ public class GameView extends JPanel {
 
 	private void handleAttackButton(boolean is_attack) {
 		if (!isPlayerTurn) {
-			JOptionPane.showMessageDialog(this, "상대의 턴입니다. 기다려 주세요.", "알림", JOptionPane.INFORMATION_MESSAGE);
+			PopupLabelUtil.showPopupLabel(this, "상대의 턴입니다. 기다려 주세요.", "failSymbol.png");
 			return;
 		}
 
@@ -463,7 +462,6 @@ public class GameView extends JPanel {
 
 		if (opponent.getHealth() <= 0) {
 			disableAllButtons();
-			homeButton.setEnabled(false);
 			// 0.5초 딜레이
 			Timer timer = new Timer(500, new ActionListener() {
 				@Override
@@ -757,7 +755,6 @@ public class GameView extends JPanel {
 	private void endPlayerTurn() {
 		isPlayerTurn = false;
 		disableAllButtons();
-		homeButton.setEnabled(false);
 		scheduleOpponentTurn();
 	}
 
@@ -811,7 +808,6 @@ public class GameView extends JPanel {
 		turnCount++; // 턴 수 증가
 		updateTurnCountLabel(); // 턴 수 레이블 업데이트
 		enableAllButtons();
-		homeButton.setEnabled(true);
 		nextButton.setEnabled(false);
 	}
 
@@ -946,6 +942,7 @@ public class GameView extends JPanel {
 	}
 
 	private void handlePlayerDeath() {
+		isPlayerDeath = true;
 		disableAllButtons();
 		showEndGameImage("gameOver.png");
 	}
@@ -967,7 +964,10 @@ public class GameView extends JPanel {
 
 	private void returnToHome() {
 		userController.updateTurns(player.getId(), turnCount);
-		userController.updateCurrentStageInDatabase(player.getId(), currentStage);
+		if (isPlayerDeath)
+			userController.updateCurrentStageInDatabase(player.getId(), currentStage - 1);
+		else
+			userController.updateCurrentStageInDatabase(player.getId(), currentStage);
 		homeView.updateRanking(); // 홈 화면으로 돌아오며 랭킹 갱신
 		restartGame();
 		userController.clearUserItems(player.getId());

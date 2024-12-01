@@ -32,8 +32,7 @@ public class RPGGameApp {
 			loginView.setOnLoginSuccessListener((userId) -> {
 				Player player = userController.getPlayerInfo(userId); // 데이터베이스에서 Player 생성
 				if (player == null) {
-					JOptionPane.showMessageDialog(mainFrame, "플레이어 정보를 불러올 수 없습니다.", "오류", JOptionPane.ERROR_MESSAGE);
-					return;
+			        throw new RuntimeException("플레이어 정보를 불러올 수 없음");
 				}
 
 				// HomeView, GameView, ShopView 추가

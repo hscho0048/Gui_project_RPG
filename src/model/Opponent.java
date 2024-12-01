@@ -1,7 +1,5 @@
 package model;
 
-import java.util.Random;
-
 public class Opponent {
 	private String name;
 	private int health;
@@ -10,7 +8,6 @@ public class Opponent {
 	private int specialAttackPower; // 특수공격력
 	private int defense; // 방어력
 	private int specialDefense; // 특수방어력
-	private Random random;
 	private int turnCount;
 
 	public Opponent(String name, int health, int attackPower, int specialAttackPower, int defense, int specialDefense) {
@@ -21,7 +18,6 @@ public class Opponent {
 		this.specialAttackPower = specialAttackPower;
 		this.defense = defense;
 		this.specialDefense = specialDefense;
-		this.random = new Random();
 		this.turnCount = 0;
 	}
 

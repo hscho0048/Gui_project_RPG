@@ -21,7 +21,7 @@ public class LoginView extends JPanel {
 		void onLoginSuccess(String userId); // 로그인 성공 시 호출
 	}
 
-	private OnLoginSuccessListener onLoginSuccessListener; // 리스너 필드
+	protected OnLoginSuccessListener onLoginSuccessListener; // 리스너 필드
 
 	public LoginView(UserController userController, JFrame mainFrame) {
 		this.userController = userController;
@@ -108,7 +108,6 @@ public class LoginView extends JPanel {
 			// player 객체에 ID를 명시적으로 설정 (로그인 후 받아온 userId를 설정)
 			int userId = userController.getUserId(username); // getUserId()는 로그인 후 userId를 가져오는 메서드
 			player.setId(userId); // player 객체에 userId 설정
-			System.out.println("디버깅: 로그인 후 player ID: " + player.getId()); // userId가 제대로 설정되었는지 확인
 
 			// MyCharacter 초기화
 			MyCharacter globalMyCharacter = new MyCharacter();
